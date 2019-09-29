@@ -85,6 +85,7 @@ public final class RedisDecoder extends ByteToMessageDecoder {
      * @param decodeInlineCommands if {@code true}, inline commands will be decoded.
      */
     public RedisDecoder(int maxInlineMessageLength, RedisMessagePool messagePool, boolean decodeInlineCommands) {
+        System.out.println("RedisDecoder 构造方法...");
         if (maxInlineMessageLength <= 0 || maxInlineMessageLength > RedisConstants.REDIS_MESSAGE_MAX_LENGTH) {
             throw new RedisCodecException("maxInlineMessageLength: " + maxInlineMessageLength +
                                           " (expected: <= " + RedisConstants.REDIS_MESSAGE_MAX_LENGTH + ")");
