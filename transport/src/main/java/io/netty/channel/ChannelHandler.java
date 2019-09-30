@@ -182,7 +182,7 @@ public interface ChannelHandler {
     /**
      * Gets called after the {@link ChannelHandler} was added to the actual context and it's ready to handle events.
      *
-     * ChannelHandler 已经成功被添加到 ChannelPipeline 中，可以进行处理事件。
+     * ChannelHandler被添加到ChannelPipeline中以进行处理事件时，该方法会被调用。
      *
      * 该方法，一般用于 ChannelHandler 的初始化的逻辑
      */
@@ -191,8 +191,7 @@ public interface ChannelHandler {
     /**
      * Gets called after the {@link ChannelHandler} was removed from the actual context and it doesn't handle events
      * anymore.
-     *
-     * ChannelHandler 已经成功从 ChannelPipeline 中被移除，不再进行处理事件。
+     * ChannelHandler被移除ChannelPipeline时，该方法会被调用。
      *
      * 该方法，一般用于 ChannelHandler 的销毁的逻辑
      */
@@ -201,7 +200,7 @@ public interface ChannelHandler {
     /**
      * Gets called if a {@link Throwable} was thrown.
      *
-     * 抓取到异常。目前被废弃，移到 ChannelInboundHandler 接口中，作为对 Exception Inbound 事件的处理
+     * 获取到异常时被调用。目前被废弃，移到 ChannelInboundHandler 接口中，作为对 Exception Inbound 事件的处理
      *
      * @deprecated is part of {@link ChannelInboundHandler}
      */
@@ -209,6 +208,9 @@ public interface ChannelHandler {
     void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception;
 
     /**
+     * 注解表示同一个ChannelHandler实例可以添加到多个ChannelPipeline，可以在ChannelPipeline之间安全共享
+     * 反之如果没有该注解，那么添加到不同的ChannelPipeline需要new出不同的实例，ChannelPipeline之间不能共享
+     *
      * Indicates that the same instance of the annotated {@link ChannelHandler}
      * can be added to one or more {@link ChannelPipeline}s multiple times
      * without a race condition.

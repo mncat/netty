@@ -178,12 +178,13 @@ public abstract class AbstractByteBufAllocator implements ByteBufAllocator {
 
     @Override
     public ByteBuf heapBuffer(int initialCapacity, int maxCapacity) {
-        // 空 ByteBuf 对象
+        //1.空ByteBuf对象
         if (initialCapacity == 0 && maxCapacity == 0) {
             return emptyBuf;
         }
+        //2.参数校验
         validate(initialCapacity, maxCapacity); // 校验容量的参数
-        // 创建 Heap ByteBuf 对象
+        //3.创建Heap ByteBuf对象，抽象方法交给子类实现
         return newHeapBuffer(initialCapacity, maxCapacity);
     }
 
@@ -199,12 +200,13 @@ public abstract class AbstractByteBufAllocator implements ByteBufAllocator {
 
     @Override
     public ByteBuf directBuffer(int initialCapacity, int maxCapacity) {
-        // 空 ByteBuf 对象
+        //1.空ByteBuf对象
         if (initialCapacity == 0 && maxCapacity == 0) {
             return emptyBuf;
         }
-        validate(initialCapacity, maxCapacity); // 校验容量的参数
-        // 创建 Direct ByteBuf 对象
+        //2.参数校验
+        validate(initialCapacity, maxCapacity);
+        //3.创建Direct ByteBuf对象，抽象方法交给子类实现
         return newDirectBuffer(initialCapacity, maxCapacity);
     }
 

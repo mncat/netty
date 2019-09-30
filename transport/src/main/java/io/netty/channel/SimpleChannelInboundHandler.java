@@ -44,6 +44,8 @@ import io.netty.util.internal.TypeParameterMatcher;
  * Please keep in mind that {@link #channelRead0(ChannelHandlerContext, I)} will be renamed to
  * {@code messageReceived(ChannelHandlerContext, I)} in 5.0.
  * </p>
+ *
+ *  SimpleChannelInboundHandler可以处理指定类型的消息。可以实现SimpleChannelInboundHandler来对指定类型的消息的自定义处理。
  */
 public abstract class SimpleChannelInboundHandler<I> extends ChannelInboundHandlerAdapter {
 
@@ -60,6 +62,7 @@ public abstract class SimpleChannelInboundHandler<I> extends ChannelInboundHandl
 
     /**
      * see {@link #SimpleChannelInboundHandler(boolean)} with {@code true} as boolean parameter.
+     * 构造方法
      */
     protected SimpleChannelInboundHandler() {
         this(true);
@@ -70,6 +73,7 @@ public abstract class SimpleChannelInboundHandler<I> extends ChannelInboundHandl
      *
      * @param autoRelease   {@code true} if handled messages should be released automatically by passing them to
      *                      {@link ReferenceCountUtil#release(Object)}.
+     * 构造方法
      */
     protected SimpleChannelInboundHandler(boolean autoRelease) {
         // 获得 matcher
@@ -79,6 +83,7 @@ public abstract class SimpleChannelInboundHandler<I> extends ChannelInboundHandl
 
     /**
      * see {@link #SimpleChannelInboundHandler(Class, boolean)} with {@code true} as boolean value.
+     * 构造方法
      */
     protected SimpleChannelInboundHandler(Class<? extends I> inboundMessageType) {
         this(inboundMessageType, true);
@@ -90,6 +95,7 @@ public abstract class SimpleChannelInboundHandler<I> extends ChannelInboundHandl
      * @param inboundMessageType    The type of messages to match
      * @param autoRelease           {@code true} if handled messages should be released automatically by passing them to
      *                              {@link ReferenceCountUtil#release(Object)}.
+     * 构造方法
      */
     protected SimpleChannelInboundHandler(Class<? extends I> inboundMessageType, boolean autoRelease) {
         matcher = TypeParameterMatcher.get(inboundMessageType);
@@ -104,25 +110,29 @@ public abstract class SimpleChannelInboundHandler<I> extends ChannelInboundHandl
         return matcher.match(msg);
     }
 
+    /**
+     * 实现好的骨架方法，子类实现channelRead0即可
+     * 方法内部已经将资源的释放实现好了，子类在channelRead0中不需要释放资源
+     * */
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-        // 是否要释放消息
+        //1.是否要释放消息
         boolean release = true;
         try {
-            // 判断是否为匹配的消息
+            //2.判断是否为匹配的消息
             if (acceptInboundMessage(msg)) {
                 @SuppressWarnings("unchecked")
                 I imsg = (I) msg;
-                // 处理消息
+                //3.处理消息
                 channelRead0(ctx, imsg);
             } else {
-                // 不需要释放消息
+                //4.不需要释放消息
                 release = false;
-                // 触发 Channel Read 到下一个节点
+                //5.触发Channel Read到下一个节点
                 ctx.fireChannelRead(msg);
             }
         } finally {
-            // 判断，是否要释放消息
+            //6.判断，是否要释放消息
             if (autoRelease && release) {
                 ReferenceCountUtil.release(msg);
             }
@@ -139,6 +149,8 @@ public abstract class SimpleChannelInboundHandler<I> extends ChannelInboundHandl
      *                      belongs to
      * @param msg           the message to handle
      * @throws Exception    is thrown if an error occurred
+     *
+     * 需要子类实现的抽象方法,在接收到数据时被调用
      */
     protected abstract void channelRead0(ChannelHandlerContext ctx, I msg) throws Exception;
 }

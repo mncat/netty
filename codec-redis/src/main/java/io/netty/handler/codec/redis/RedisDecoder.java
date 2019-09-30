@@ -41,6 +41,9 @@ public final class RedisDecoder extends ByteToMessageDecoder {
     private final RedisMessagePool messagePool;
 
     // current decoding states
+    /**
+     *保存当前序列化的状态字段，下一次序列化的时候直接从该字段开始，利于反序列化比较长的字段
+     * */
     private State state = State.DECODE_TYPE;
     private RedisMessageType type;
     private int remainingBulkLength;
@@ -95,9 +98,13 @@ public final class RedisDecoder extends ByteToMessageDecoder {
         this.decodeInlineCommands = decodeInlineCommands;
     }
 
+    /**
+     * 解码器的主要逻辑
+     * */
     @Override
     protected void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) throws Exception {
         try {
+            //循环读取，进行解码
             for (;;) {
                 switch (state) {
                 case DECODE_TYPE:
@@ -143,6 +150,9 @@ public final class RedisDecoder extends ByteToMessageDecoder {
         remainingBulkLength = 0;
     }
 
+    /**
+     * DECODE_TYPE类型进行解码
+     * */
     private boolean decodeType(ByteBuf in) throws Exception {
         if (!in.isReadable()) {
             return false;
@@ -153,6 +163,9 @@ public final class RedisDecoder extends ByteToMessageDecoder {
         return true;
     }
 
+    /**
+     * DECODE_INLINE解码单行字符串，错误信息，或者整型数据类型
+     * */
     private boolean decodeInline(ByteBuf in, List<Object> out) throws Exception {
         ByteBuf lineBytes = readLine(in);
         if (lineBytes == null) {
@@ -167,6 +180,9 @@ public final class RedisDecoder extends ByteToMessageDecoder {
         return true;
     }
 
+    /**
+     * 解码消息长度
+     * */
     private boolean decodeLength(ByteBuf in, List<Object> out) throws Exception {
         ByteBuf lineByteBuf = readLine(in);
         if (lineByteBuf == null) {
@@ -193,6 +209,9 @@ public final class RedisDecoder extends ByteToMessageDecoder {
         }
     }
 
+    /**
+     * 解码多行字符串
+     * */
     private boolean decodeBulkString(ByteBuf in, List<Object> out) throws Exception {
         switch (remainingBulkLength) {
         case RedisConstants.NULL_VALUE: // $-1\r\n

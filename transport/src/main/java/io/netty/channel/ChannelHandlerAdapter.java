@@ -25,9 +25,9 @@ import java.util.Map;
  */
 public abstract class ChannelHandlerAdapter implements ChannelHandler {
 
-    // Not using volatile because it's used only for a sanity check.
     /**
      * 是否已经初始化
+     * 仅用于完整性检查，所以不需要volatile；Not using volatile because it's used only for a sanity check.
      */
     boolean added;
 
@@ -65,6 +65,7 @@ public abstract class ChannelHandlerAdapter implements ChannelHandler {
 
     /**
      * Do nothing by default, sub-classes may override this method.
+     * 默认不做任何事情
      */
     @Override
     public void handlerAdded(ChannelHandlerContext ctx) throws Exception {
@@ -73,6 +74,7 @@ public abstract class ChannelHandlerAdapter implements ChannelHandler {
 
     /**
      * Do nothing by default, sub-classes may override this method.
+     * 默认不做任何事情
      */
     @Override
     public void handlerRemoved(ChannelHandlerContext ctx) throws Exception {
@@ -84,6 +86,7 @@ public abstract class ChannelHandlerAdapter implements ChannelHandler {
      * to the next {@link ChannelHandler} in the {@link ChannelPipeline}.
      *
      * Sub-classes may override this method to change behavior.
+     * 调用ChannelPipeline中的下一个ChannelHandler
      */
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {

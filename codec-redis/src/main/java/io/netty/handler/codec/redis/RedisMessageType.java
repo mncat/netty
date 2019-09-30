@@ -25,10 +25,28 @@ import io.netty.util.internal.UnstableApi;
 public enum RedisMessageType {
 
     INLINE_COMMAND(null, true),
+    /**
+     * +号开头代表单行字符串
+     */
     SIMPLE_STRING((byte) '+', true),
+    /**
+     * -号开头代表错误信息
+     */
     ERROR((byte) '-', true),
+
+    /**
+     * :开头代表整型数据
+     */
     INTEGER((byte) ':', true),
+
+    /**
+     * $号开头代表多行字符串
+     */
     BULK_STRING((byte) '$', false),
+
+    /**
+     * *号开头代表数组
+     */
     ARRAY_HEADER((byte) '*', false);
 
     private final Byte value;

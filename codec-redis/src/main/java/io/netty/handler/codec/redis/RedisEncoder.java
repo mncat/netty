@@ -29,6 +29,7 @@ import java.util.List;
 /**
  * Encodes {@link RedisMessage} into bytes following
  * <a href="http://redis.io/topics/protocol">RESP (REdis Serialization Protocol)</a>.
+ * Redis编码器，将Redis的消息编码成字节序列
  */
 @UnstableApi
 public class RedisEncoder extends MessageToMessageEncoder<RedisMessage> {
@@ -37,6 +38,7 @@ public class RedisEncoder extends MessageToMessageEncoder<RedisMessage> {
 
     /**
      * Creates a new instance with default {@code messagePool}.
+     * 构造方法
      */
     public RedisEncoder() {
         this(FixedRedisMessagePool.INSTANCE);
@@ -44,12 +46,17 @@ public class RedisEncoder extends MessageToMessageEncoder<RedisMessage> {
 
     /**
      * Creates a new instance.
+     *
      * @param messagePool the predefined message pool.
+     *                    构造方法
      */
     public RedisEncoder(RedisMessagePool messagePool) {
         this.messagePool = ObjectUtil.checkNotNull(messagePool, "messagePool");
     }
 
+    /**
+     * 编码
+     */
     @Override
     protected void encode(ChannelHandlerContext ctx, RedisMessage msg, List<Object> out) throws Exception {
         try {
@@ -61,6 +68,10 @@ public class RedisEncoder extends MessageToMessageEncoder<RedisMessage> {
         }
     }
 
+    /**
+     * 编码的核心逻辑
+     * 判断消息类型，然后调用对应的方法写消息
+     */
     private void writeRedisMessage(ByteBufAllocator allocator, RedisMessage msg, List<Object> out) {
         if (msg instanceof InlineCommandRedisMessage) {
             writeInlineCommandMessage(allocator, (InlineCommandRedisMessage) msg, out);
@@ -85,8 +96,11 @@ public class RedisEncoder extends MessageToMessageEncoder<RedisMessage> {
         }
     }
 
-    private static void writeInlineCommandMessage(ByteBufAllocator allocator, InlineCommandRedisMessage msg,
-                                                 List<Object> out) {
+    /**
+     *将消息按照RESP协议进行序列化操作，分配ByteBuf，然后对象序列化的字节数组写入ByteBuf
+     * */
+    private static void writeInlineCommandMessage(ByteBufAllocator allocator,
+                                                  InlineCommandRedisMessage msg, List<Object> out) {
         writeString(allocator, RedisMessageType.INLINE_COMMAND, msg.content(), out);
     }
 
@@ -102,7 +116,7 @@ public class RedisEncoder extends MessageToMessageEncoder<RedisMessage> {
     private static void writeString(ByteBufAllocator allocator, RedisMessageType type, String content,
                                     List<Object> out) {
         ByteBuf buf = allocator.ioBuffer(type.length() + ByteBufUtil.utf8MaxBytes(content) +
-                                         RedisConstants.EOL_LENGTH);
+                RedisConstants.EOL_LENGTH);
         type.writeTo(buf);
         ByteBufUtil.writeUtf8(buf, content);
         buf.writeShort(RedisConstants.EOL_SHORT);
@@ -111,7 +125,7 @@ public class RedisEncoder extends MessageToMessageEncoder<RedisMessage> {
 
     private void writeIntegerMessage(ByteBufAllocator allocator, IntegerRedisMessage msg, List<Object> out) {
         ByteBuf buf = allocator.ioBuffer(RedisConstants.TYPE_LENGTH + RedisConstants.LONG_MAX_LENGTH +
-                                         RedisConstants.EOL_LENGTH);
+                RedisConstants.EOL_LENGTH);
         RedisMessageType.INTEGER.writeTo(buf);
         buf.writeBytes(numberToBytes(msg.value()));
         buf.writeShort(RedisConstants.EOL_SHORT);
@@ -120,8 +134,8 @@ public class RedisEncoder extends MessageToMessageEncoder<RedisMessage> {
 
     private void writeBulkStringHeader(ByteBufAllocator allocator, BulkStringHeaderRedisMessage msg, List<Object> out) {
         final ByteBuf buf = allocator.ioBuffer(RedisConstants.TYPE_LENGTH +
-                                        (msg.isNull() ? RedisConstants.NULL_LENGTH :
-                                                        RedisConstants.LONG_MAX_LENGTH + RedisConstants.EOL_LENGTH));
+                (msg.isNull() ? RedisConstants.NULL_LENGTH :
+                        RedisConstants.LONG_MAX_LENGTH + RedisConstants.EOL_LENGTH));
         RedisMessageType.BULK_STRING.writeTo(buf);
         if (msg.isNull()) {
             buf.writeShort(RedisConstants.NULL_SHORT);
@@ -144,14 +158,14 @@ public class RedisEncoder extends MessageToMessageEncoder<RedisMessage> {
                                             List<Object> out) {
         if (msg.isNull()) {
             ByteBuf buf = allocator.ioBuffer(RedisConstants.TYPE_LENGTH + RedisConstants.NULL_LENGTH +
-                                             RedisConstants.EOL_LENGTH);
+                    RedisConstants.EOL_LENGTH);
             RedisMessageType.BULK_STRING.writeTo(buf);
             buf.writeShort(RedisConstants.NULL_SHORT);
             buf.writeShort(RedisConstants.EOL_SHORT);
             out.add(buf);
         } else {
             ByteBuf headerBuf = allocator.ioBuffer(RedisConstants.TYPE_LENGTH + RedisConstants.LONG_MAX_LENGTH +
-                                                   RedisConstants.EOL_LENGTH);
+                    RedisConstants.EOL_LENGTH);
             RedisMessageType.BULK_STRING.writeTo(headerBuf);
             headerBuf.writeBytes(numberToBytes(msg.content().readableBytes()));
             headerBuf.writeShort(RedisConstants.EOL_SHORT);
@@ -185,14 +199,14 @@ public class RedisEncoder extends MessageToMessageEncoder<RedisMessage> {
     private void writeArrayHeader(ByteBufAllocator allocator, boolean isNull, long length, List<Object> out) {
         if (isNull) {
             final ByteBuf buf = allocator.ioBuffer(RedisConstants.TYPE_LENGTH + RedisConstants.NULL_LENGTH +
-                                                   RedisConstants.EOL_LENGTH);
+                    RedisConstants.EOL_LENGTH);
             RedisMessageType.ARRAY_HEADER.writeTo(buf);
             buf.writeShort(RedisConstants.NULL_SHORT);
             buf.writeShort(RedisConstants.EOL_SHORT);
             out.add(buf);
         } else {
             final ByteBuf buf = allocator.ioBuffer(RedisConstants.TYPE_LENGTH + RedisConstants.LONG_MAX_LENGTH +
-                                                   RedisConstants.EOL_LENGTH);
+                    RedisConstants.EOL_LENGTH);
             RedisMessageType.ARRAY_HEADER.writeTo(buf);
             buf.writeBytes(numberToBytes(length));
             buf.writeShort(RedisConstants.EOL_SHORT);
