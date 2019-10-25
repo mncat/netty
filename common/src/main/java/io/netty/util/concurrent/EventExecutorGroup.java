@@ -22,12 +22,15 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 /**
- * EventExecutor ( 事件执行器 )的分组接口
- *
+ * EventExecutor(事件执行器)分组接口，提供处理EventExecutor生命周期的方法，
+ * 比如关闭方法shutdownGracefully、terminationFuture(全部EventExecutor关闭之后会调用对应的Future)
+ * isShuttingDown：判断全部的EventExecutor是否都已经关闭
+ * 另外提供了next方法用于返回一个EventExecutor
+ * 另外他重写了继承自父类的一些方法，默认也是空实现，避免子类需要实现全部的方法
+ * <p>
  * The {@link EventExecutorGroup} is responsible for providing the {@link EventExecutor}'s to use
  * via its {@link #next()} method. Besides this, it is also responsible for handling their
  * life-cycle and allows shutting them down in a global fashion.
- *
  */
 public interface EventExecutorGroup extends ScheduledExecutorService, Iterable<EventExecutor> {
 
@@ -55,7 +58,6 @@ public interface EventExecutorGroup extends ScheduledExecutorService, Iterable<E
      * @param timeout     the maximum amount of time to wait until the executor is {@linkplain #shutdown()}
      *                    regardless if a task was submitted during the quiet period
      * @param unit        the unit of {@code quietPeriod} and {@code timeout}
-     *
      * @return the {@link #terminationFuture()}
      */
     Future<?> shutdownGracefully(long quietPeriod, long timeout, TimeUnit unit);
@@ -65,6 +67,8 @@ public interface EventExecutorGroup extends ScheduledExecutorService, Iterable<E
      * {@link EventExecutorGroup} have been terminated.
      */
     Future<?> terminationFuture();
+
+    //下面的@Override方法都是继承自父类的方法
 
     /**
      * @deprecated {@link #shutdownGracefully(long, long, TimeUnit)} or {@link #shutdownGracefully()} instead.

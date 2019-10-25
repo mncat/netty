@@ -27,8 +27,8 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.ThreadFactory;
 
 /**
- * 基于多线程的 EventLoop 的分组抽象类。
- *
+ * 多线程的EventLoop分组抽象类,实现EventLoopGroup接口，使用多线程同时处理任务
+ * <p>
  * Abstract base class for {@link EventLoopGroup} implementations that handles their tasks with multiple threads at
  * the same time.
  */
@@ -37,7 +37,7 @@ public abstract class MultithreadEventLoopGroup extends MultithreadEventExecutor
     private static final InternalLogger logger = InternalLoggerFactory.getInstance(MultithreadEventLoopGroup.class);
 
     /**
-     * 默认 EventLoop 线程数
+     * 默认EventLoop线程数,通过static代码块赋值，CPU核心数的2倍
      */
     private static final int DEFAULT_EVENT_LOOP_THREADS;
 
@@ -71,6 +71,7 @@ public abstract class MultithreadEventLoopGroup extends MultithreadEventExecutor
         super(nThreads == 0 ? DEFAULT_EVENT_LOOP_THREADS : nThreads, executor, chooserFactory, args);
     }
 
+
     @Override
     protected ThreadFactory newDefaultThreadFactory() {
         return new DefaultThreadFactory(getClass(), Thread.MAX_PRIORITY);
@@ -81,6 +82,10 @@ public abstract class MultithreadEventLoopGroup extends MultithreadEventExecutor
         return (EventLoop) super.next();
     }
 
+    /**
+     * 下面是继承自EventLoopGroup和MultithreadEventExecutorGroup的方法,基本也是通过next来实
+     * 现的，或者不实现
+     */
     @Override
     protected abstract EventLoop newChild(Executor executor, Object... args) throws Exception;
 

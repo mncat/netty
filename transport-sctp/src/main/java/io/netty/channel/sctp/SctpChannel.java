@@ -29,6 +29,7 @@ import java.util.Set;
  *
  * <p>
  * The SctpChannel is a message-oriented, connected transport which supports multi-streaming and multi-homing.
+ * SctpChannel是一种面向消息的连接传输，支持多流和多宿主。有NioSctpChannel和OioSctpChannel两个实现类
  * </p>
  */
 public interface SctpChannel extends Channel {

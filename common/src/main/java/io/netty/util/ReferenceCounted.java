@@ -16,8 +16,9 @@
 package io.netty.util;
 
 /**
- * 引用计数接口
- *
+ * netty引用计数接口
+ * 初始化的时候是1，retain()的时候加一，release()的时候减一
+ * 如果引用计数减少到{@code 0}，则将显式释放对象，访问该释放了的对象通常会导致访问冲突。
  * A reference-counted object that requires explicit deallocation.
  * <p>
  * When a new {@link ReferenceCounted} is instantiated, it starts with the reference count of {@code 1}.
@@ -41,14 +42,14 @@ public interface ReferenceCounted {
     int refCnt();
 
     /**
-     * 增加引用计数 1
+     * 引用计数加1
      *
      * Increases the reference count by {@code 1}.
      */
     ReferenceCounted retain();
 
     /**
-     * 增加引用计数 n
+     * 引用计数加 n
      *
      * Increases the reference count by the specified {@code increment}.
      */
@@ -74,7 +75,7 @@ public interface ReferenceCounted {
     ReferenceCounted touch(Object hint);
 
     /**
-     * 减少引用计数 1 。
+     * 引用计数减1
      * 当引用计数为 0 时，释放
      *
      * Decreases the reference count by {@code 1} and deallocates this object if the reference count reaches at
@@ -85,7 +86,7 @@ public interface ReferenceCounted {
     boolean release();
 
     /**
-     * 减少引用计数 n 。
+     * 引用计数减n
      *  当引用计数为 0 时，释放
      *
      * Decreases the reference count by the specified {@code decrement} and deallocates this object if the reference

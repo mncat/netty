@@ -19,6 +19,7 @@ import io.netty.channel.Channel;
 
 /**
  * {@link Channel} that expose operations that are only present on {@code UNIX} like systems.
+ * UnixChannel是暴露给类Unix系统去实现的api
  */
 public interface UnixChannel extends Channel {
     /**

@@ -64,23 +64,21 @@ abstract class AbstractChannelHandlerContext extends DefaultAttributeMap
     private static final AtomicIntegerFieldUpdater<AbstractChannelHandlerContext> HANDLER_STATE_UPDATER = AtomicIntegerFieldUpdater.newUpdater(AbstractChannelHandlerContext.class, "handlerState");
 
     /**
-     * 上一个节点
+     * 链表上一个节点
      */
     volatile AbstractChannelHandlerContext next;
     /**
-     * 下一个节点
+     * 链表下一个节点
      */
     volatile AbstractChannelHandlerContext prev;
     /**
-     * 是否为 inbound
+     * 标识handler类型，是否为inbound或者是否为outbound
      */
     private final boolean inbound;
-    /**
-     * 是否为 outbound
-     */
     private final boolean outbound;
+
     /**
-     * 所属 pipeline
+     * ChannelHandlerContext节点所属的pipeline
      */
     private final DefaultChannelPipeline pipeline;
     /**
@@ -128,6 +126,7 @@ abstract class AbstractChannelHandlerContext extends DefaultAttributeMap
 
     AbstractChannelHandlerContext(DefaultChannelPipeline pipeline, EventExecutor executor, String name,
                                   boolean inbound, boolean outbound) {
+        //构造方法初始化重要的参数
         this.name = ObjectUtil.checkNotNull(name, "name");
         this.pipeline = pipeline;
         this.executor = executor;

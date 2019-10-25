@@ -50,13 +50,20 @@ import static io.netty.channel.internal.ChannelUtils.MAX_BYTES_PER_GATHERING_WRI
 
 /**
  * {@link io.netty.channel.socket.SocketChannel} which uses NIO selector based implementation.
+ * NioSocketChannel是基于NIO selector的SocketChannel实现
  */
 public class NioSocketChannel extends AbstractNioByteChannel implements io.netty.channel.socket.SocketChannel {
 
     private static final InternalLogger logger = InternalLoggerFactory.getInstance(NioSocketChannel.class);
 
+    /**
+     * 默认的SelectorProvider，跟进去看返回的是WindowsSelectorProvider，WindowsSelectorProvider是Selector接口的一个实现
+     * */
     private static final SelectorProvider DEFAULT_SELECTOR_PROVIDER = SelectorProvider.provider();
 
+    /**
+     * 返回SocketChannel，内部使用SelectorProvider来创建
+     * */
     private static SocketChannel newSocket(SelectorProvider provider) {
         try {
             /**
@@ -71,10 +78,14 @@ public class NioSocketChannel extends AbstractNioByteChannel implements io.netty
         }
     }
 
+    /**
+     * 配置对象
+     * */
     private final SocketChannelConfig config;
 
     /**
      * Create a new instance
+     * 构造方法,使用默认的WindowsSelectorProvider构造
      */
     public NioSocketChannel() {
         this(DEFAULT_SELECTOR_PROVIDER);
@@ -82,6 +93,7 @@ public class NioSocketChannel extends AbstractNioByteChannel implements io.netty
 
     /**
      * Create a new instance using the given {@link SelectorProvider}.
+     * 构造方法,指定SelectorProvider
      */
     public NioSocketChannel(SelectorProvider provider) {
         this(newSocket(provider));
@@ -96,7 +108,7 @@ public class NioSocketChannel extends AbstractNioByteChannel implements io.netty
 
     /**
      * Create a new instance
-     *
+     * 构造方法，指定父Channel和SocketChannel
      * @param parent    the {@link Channel} which created this instance or {@code null} if it was created by the user
      * @param socket    the {@link SocketChannel} which will be used
      */
@@ -105,16 +117,27 @@ public class NioSocketChannel extends AbstractNioByteChannel implements io.netty
         config = new NioSocketChannelConfig(this, socket.socket());
     }
 
+
+
+    /**
+     * 获取parent
+     * */
     @Override
     public ServerSocketChannel parent() {
         return (ServerSocketChannel) super.parent();
     }
 
+    /**
+     * 获取配置对象
+     * */
     @Override
     public SocketChannelConfig config() {
         return config;
     }
 
+    /**
+     *Java 原生 NIO 的 Channel 对象
+     */
     @Override
     protected SocketChannel javaChannel() {
         return (SocketChannel) super.javaChannel();
@@ -125,6 +148,7 @@ public class NioSocketChannel extends AbstractNioByteChannel implements io.netty
         SocketChannel ch = javaChannel();
         return ch.isOpen() && ch.isConnected();
     }
+
 
     @Override
     public boolean isOutputShutdown() {

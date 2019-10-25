@@ -48,14 +48,14 @@ public interface ChannelId extends Serializable, Comparable<ChannelId> {
     /**
      * Returns the short but globally non-unique string representation of the {@link ChannelId}.
      *
-     * 全局非唯一
+     * 短id，全局非唯一
      */
     String asShortText();
 
     /**
      * Returns the long yet globally unique string representation of the {@link ChannelId}.
      *
-     * 全局唯一
+     * 长id，全局唯一
      */
     String asLongText();
 

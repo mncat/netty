@@ -218,6 +218,7 @@ public interface ChannelPipeline
 
     /**
      * Inserts a {@link ChannelHandler} at the first position of this pipeline.
+     * 在开始的位置添加一个ChannelHandler
      *
      * @param name     the name of the handler to insert first
      * @param handler  the handler to insert first
@@ -246,6 +247,7 @@ public interface ChannelPipeline
 
     /**
      * Appends a {@link ChannelHandler} at the last position of this pipeline.
+     * 在末尾位置添加一个ChannelHandler
      *
      * @param name     the name of the handler to append
      * @param handler  the handler to append
@@ -275,6 +277,7 @@ public interface ChannelPipeline
     /**
      * Inserts a {@link ChannelHandler} before an existing handler of this
      * pipeline.
+     * 在指定ChannelHandler前面添加一个ChannelHandler
      *
      * @param baseName  the name of the existing handler
      * @param name      the name of the handler to insert before
@@ -311,6 +314,7 @@ public interface ChannelPipeline
     /**
      * Inserts a {@link ChannelHandler} after an existing handler of this
      * pipeline.
+     * 在指定ChannelHandler后面添加一个ChannelHandler
      *
      * @param baseName  the name of the existing handler
      * @param name      the name of the handler to insert after
@@ -382,6 +386,7 @@ public interface ChannelPipeline
 
     /**
      * Removes the specified {@link ChannelHandler} from this pipeline.
+     * 移除ChannelHandler
      *
      * @param  handler          the {@link ChannelHandler} to remove
      *
@@ -519,6 +524,7 @@ public interface ChannelPipeline
 
     /**
      * Returns the last {@link ChannelHandler} in this pipeline.
+     * 返回最后一个ChannelHandler
      *
      * @return the last handler.  {@code null} if this pipeline is empty.
      */
@@ -534,6 +540,7 @@ public interface ChannelPipeline
     /**
      * Returns the {@link ChannelHandler} with the specified name in this
      * pipeline.
+     * 根据名字获取ChannelHandler
      *
      * @return the handler with the specified name.
      *         {@code null} if there's no such handler in this pipeline.

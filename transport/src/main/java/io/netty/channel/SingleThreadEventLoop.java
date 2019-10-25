@@ -27,8 +27,9 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.ThreadFactory;
 
 /**
- * 基于单线程的 EventLoop 抽象类，主要增加了 Channel 注册到 EventLoop 上。
- *
+ * 基于单线程的EventLoop抽象类，
+ * 主要增加了注册功能，将Channel注册到EventLoop上
+ * <p>
  * Abstract base class for {@link EventLoop}s that execute all its submitted tasks in a single thread.
  */
 public abstract class SingleThreadEventLoop extends SingleThreadEventExecutor implements EventLoop {
@@ -40,18 +41,18 @@ public abstract class SingleThreadEventLoop extends SingleThreadEventExecutor im
 
     /**
      * 尾部任务队列，执行在 {@link #taskQueue} 之后
-     *
      * Commits
-     *  * [Ability to run a task at the end of an eventloop iteration.](https://github.com/netty/netty/pull/5513)
-     *
+     * * [Ability to run a task at the end of an eventloop iteration.](https://github.com/netty/netty/pull/5513)
      * Issues
-     *  * [Auto-flush for channels. (`ChannelHandler` implementation)](https://github.com/netty/netty/pull/5716)
-     *  * [Consider removing executeAfterEventLoopIteration](https://github.com/netty/netty/issues/7833)
-     *
+     * * [Auto-flush for channels. (`ChannelHandler` implementation)](https://github.com/netty/netty/pull/5716)
+     * * [Consider removing executeAfterEventLoopIteration](https://github.com/netty/netty/issues/7833)
      * 老艿艿：未来会移除该队列，前提是实现了 Channel 的 auto flush 功能。按照最后一个 issue 的讨论
      */
     private final Queue<Runnable> tailTasks;
 
+    /**
+     * 一系列重载的构造方法
+     * */
     protected SingleThreadEventLoop(EventLoopGroup parent, ThreadFactory threadFactory, boolean addTaskWakesUp) {
         this(parent, threadFactory, addTaskWakesUp, DEFAULT_MAX_PENDING_TASKS, RejectedExecutionHandlers.reject());
     }
@@ -74,6 +75,9 @@ public abstract class SingleThreadEventLoop extends SingleThreadEventExecutor im
         tailTasks = newTaskQueue(maxPendingTasks);
     }
 
+    /**
+     * 返回所属的EventExecutorGroup
+     * */
     @Override
     public EventLoopGroup parent() {
         return (EventLoopGroup) super.parent();
@@ -92,9 +96,9 @@ public abstract class SingleThreadEventLoop extends SingleThreadEventExecutor im
     @Override
     public ChannelFuture register(final ChannelPromise promise) {
         ObjectUtil.checkNotNull(promise, "promise");
-        // 注册 Channel 到 EventLoop 上
+        //1.注册Channel到EventLoop上
         promise.channel().unsafe().register(this, promise);
-        // 返回 ChannelPromise 对象
+        //2.返回ChannelPromise对象
         return promise;
     }
 
@@ -141,7 +145,6 @@ public abstract class SingleThreadEventLoop extends SingleThreadEventExecutor im
      * Removes a task that was added previously via {@link #executeAfterEventLoopIteration(Runnable)}.
      *
      * @param task to be removed.
-     *
      * @return {@code true} if the task was removed as a result of this call.
      */
     @UnstableApi
@@ -172,6 +175,7 @@ public abstract class SingleThreadEventLoop extends SingleThreadEventExecutor im
     /**
      * Marker interface for {@link Runnable} that will not trigger an {@link #wakeup(boolean)} in all cases.
      */
-    interface NonWakeupRunnable extends Runnable { }
+    interface NonWakeupRunnable extends Runnable {
+    }
 
 }

@@ -19,12 +19,12 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.ThreadFactory;
 
 /**
- * 每个任务一个线程的执行器实现类
+ * 执行器实现类，每个任务创建一个线程执行
  */
 public final class ThreadPerTaskExecutor implements Executor {
 
     /**
-     * 线程工厂对象
+     * 线程工厂
      */
     private final ThreadFactory threadFactory;
 
@@ -44,5 +44,4 @@ public final class ThreadPerTaskExecutor implements Executor {
     public void execute(Runnable command) {
         threadFactory.newThread(command).start();
     }
-
 }

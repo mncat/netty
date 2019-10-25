@@ -25,6 +25,8 @@ import io.netty.util.concurrent.GenericFutureListener;
 import java.util.Iterator;
 
 /**
+ *
+ * ChannelGroupFuture代表一个ChannelGroup里面的IO操作的集合
  * The result of an asynchronous {@link ChannelGroup} operation.
  * {@link ChannelGroupFuture} is composed of {@link ChannelFuture}s which
  * represent the outcome of the individual I/O operations that affect the
@@ -106,12 +108,14 @@ public interface ChannelGroupFuture extends Future<Void>, Iterable<ChannelFuture
 
     /**
      * Returns the {@link ChannelGroup} which is associated with this future.
+     * 返回对应的ChannelGroup
      */
     ChannelGroup group();
 
     /**
      * Returns the {@link ChannelFuture} of the individual I/O operation which
      * is associated with the specified {@link Channel}.
+     * 根据Channel，找到其对应的ChannelFuture
      *
      * @return the matching {@link ChannelFuture} if found.
      *         {@code null} otherwise.
@@ -131,12 +135,14 @@ public interface ChannelGroupFuture extends Future<Void>, Iterable<ChannelFuture
     /**
      * Returns {@code true} if and only if the I/O operations associated with
      * this future were partially successful with some failure.
+     * 是否部分成功
      */
     boolean isPartialSuccess();
 
     /**
      * Returns {@code true} if and only if the I/O operations associated with
      * this future have failed partially with some success.
+     * 是否部分失败
      */
     boolean isPartialFailure();
 

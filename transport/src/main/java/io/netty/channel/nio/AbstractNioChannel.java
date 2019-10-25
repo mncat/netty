@@ -45,24 +45,27 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * Abstract base class for {@link Channel} implementations which use a Selector based approach.
+ * Channel的抽象基类实现，使用Selector
  */
 public abstract class AbstractNioChannel extends AbstractChannel {
 
-    private static final InternalLogger logger =
-            InternalLoggerFactory.getInstance(AbstractNioChannel.class);
+    private static final InternalLogger logger = InternalLoggerFactory.getInstance(AbstractNioChannel.class);
 
     private static final ClosedChannelException DO_CLOSE_CLOSED_CHANNEL_EXCEPTION = ThrowableUtil.unknownStackTrace(
             new ClosedChannelException(), AbstractNioChannel.class, "doClose()");
 
     /**
-     * Netty NIO Channel 对象，持有的 Java 原生 NIO 的 Channel 对象
+     * Netty的NIO Channel对象，持有的Java原生NIO的Channel对象，SelectableChannel是JDK中的Channel
      */
     private final SelectableChannel ch;
+
     /**
      * 感兴趣读事件的操作位值
      */
     protected final int readInterestOp;
+
     volatile SelectionKey selectionKey;
+
     /**
      * TODO 芋艿
      */
@@ -218,23 +221,30 @@ public abstract class AbstractNioChannel extends AbstractChannel {
 
     /**
      * Special {@link Unsafe} sub-type which allows to access the underlying {@link SelectableChannel}
+     * 特殊的Unsafe子类，可以访问基础的SelectableChannel
      */
     public interface NioUnsafe extends Unsafe {
         /**
          * Return underlying {@link SelectableChannel}
+         * 返回SelectableChannel
          */
         SelectableChannel ch();
 
         /**
          * Finish connect
+         * 结束连接
          */
         void finishConnect();
 
         /**
+         * 从SelectableChannel读数据
          * Read from underlying {@link SelectableChannel}
          */
         void read();
 
+        /**
+         * 强制刷数据
+         * */
         void forceFlush();
     }
 

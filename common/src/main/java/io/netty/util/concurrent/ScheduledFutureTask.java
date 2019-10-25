@@ -26,7 +26,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
- * Netty 定时任务
+ * Netty的定时任务
  *
  * @param <V>
  */

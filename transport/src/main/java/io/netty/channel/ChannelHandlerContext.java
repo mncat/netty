@@ -125,6 +125,9 @@ import java.nio.channels.Channels;
 public interface ChannelHandlerContext extends AttributeMap, ChannelInboundInvoker, ChannelOutboundInvoker {
 
     /**
+     * 下面几个是组件操作方法，channel,executor(eventLoop),handler,pipeline和本身，比如获取channel等
+     * */
+    /**
      * Return the {@link Channel} which is bound to the {@link ChannelHandlerContext}.
      */
     Channel channel();
@@ -153,6 +156,9 @@ public interface ChannelHandlerContext extends AttributeMap, ChannelInboundInvok
      */
     boolean isRemoved();
 
+    /**
+     * 下面方法实现传播，继承于ChannelInboundInvoker和ChannelOutboundInvoker接口
+     * */
     @Override
     ChannelHandlerContext fireChannelRegistered();
 
@@ -186,6 +192,9 @@ public interface ChannelHandlerContext extends AttributeMap, ChannelInboundInvok
     @Override
     ChannelHandlerContext flush();
 
+    /**
+     * 内存分配方法
+     * */
     /**
      * Return the assigned {@link ChannelPipeline}
      */

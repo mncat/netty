@@ -17,21 +17,21 @@ package io.netty.util.concurrent;
 
 /**
  * Special {@link Future} which is writable.
+ * 可写的Future对象
  */
 public interface Promise<V> extends Future<V> {
 
     /**
-     * Marks this future as a success and notifies all
-     * listeners.
+     * Marks this future as a success and notifies all listeners.
+     * 将Future设置为success，并通知所有监听者
      *
      * If it is success or failed already it will throw an {@link IllegalStateException}.
      */
     Promise<V> setSuccess(V result);
 
     /**
-     * Marks this future as a success and notifies all
-     * listeners.
-     *
+     * Marks this future as a success and notifies all listeners.
+     * 尝试将Future设置为success，并通知所有监听者,尝试成功返回true，失败则返回false
      * @return {@code true} if and only if successfully marked this future as
      *         a success. Otherwise {@code false} because this future is
      *         already marked as either a success or a failure.
@@ -39,9 +39,8 @@ public interface Promise<V> extends Future<V> {
     boolean trySuccess(V result);
 
     /**
-     * Marks this future as a failure and notifies all
-     * listeners.
-     *
+     * Marks this future as a failure and notifies all listeners.
+     * 将Future设置为failure，并通知所有监听者
      * If it is success or failed already it will throw an {@link IllegalStateException}.
      */
     Promise<V> setFailure(Throwable cause);
@@ -49,7 +48,7 @@ public interface Promise<V> extends Future<V> {
     /**
      * Marks this future as a failure and notifies all
      * listeners.
-     *
+     * 将Future设置为failure，并通知所有监听者 ,尝试成功返回true，失败则返回false
      * @return {@code true} if and only if successfully marked this future as
      *         a failure. Otherwise {@code false} because this future is
      *         already marked as either a success or a failure.
@@ -58,6 +57,7 @@ public interface Promise<V> extends Future<V> {
 
     /**
      * Make this future impossible to cancel.
+     * 将future设置为不能中断
      *
      * @return {@code true} if and only if successfully marked this future as uncancellable or it is already done
      *         without being cancelled.  {@code false} if this future has been cancelled already.

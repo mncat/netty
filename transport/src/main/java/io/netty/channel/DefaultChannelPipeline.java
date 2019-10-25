@@ -147,18 +147,19 @@ public class DefaultChannelPipeline implements ChannelPipeline {
     private boolean registered;
 
     protected DefaultChannelPipeline(Channel channel) {
+        //1.参数校验
         this.channel = ObjectUtil.checkNotNull(channel, "channel");
-        // succeededFuture 的创建
+        //2.succeededFuture 的创建
         succeededFuture = new SucceededChannelFuture(channel, null);
-        // voidPromise 的创建
+        //3.voidPromise 的创建
         voidPromise =  new VoidChannelPromise(channel, true);
 
-        // 创建 Tail 及诶点
+        //4.创建 Tail 及诶点
         tail = new TailContext(this);
-        // 创建 Head 节点
+        //5.创建 Head 节点
         head = new HeadContext(this);
 
-        // 相互指向
+        //6.相互指向
         head.next = tail;
         tail.prev = head;
     }
@@ -272,25 +273,25 @@ public class DefaultChannelPipeline implements ChannelPipeline {
     @SuppressWarnings("Duplicates")
     public final ChannelPipeline addLast(EventExecutorGroup group, String name, ChannelHandler handler) {
         final AbstractChannelHandlerContext newCtx;
-        synchronized (this) { // 同步，为了防止多线程并发操作 pipeline 底层的双向链表
-            // 检查是否有重复 handler
+        //1.同步控制避免多线程并发操作pipeline底层的双向链表
+        synchronized (this) {
+            //1.检查是否有重复handler，根据@Sharable判断是否允许重复添加
             checkMultiplicity(handler);
 
-            // 创建节点名
-            // 创建节点
+            //2.创建节点，Pipeline内部的节点是ChannelHandlerContext类型
             newCtx = newContext(group, filterName(name, handler), handler);
 
-            // 添加节点
+            //3.添加节点
             addLast0(newCtx);
 
-            // pipeline 暂未注册，添加回调。再注册完成后，执行回调。详细解析，见 {@link #invokeHandlerAddedIfNeeded} 方法。
+            //Channel还未注册，添加回调方法。注册完成后会执行回调方法。详细解析，见 {@link #invokeHandlerAddedIfNeeded} 方法。
             // If the registered is false it means that the channel was not registered on an eventloop yet.
             // In this case we add the context to the pipeline and add a task that will call
             // ChannelHandler.handlerAdded(...) once the channel is registered.
             if (!registered) {
-                // 设置 AbstractChannelHandlerContext 准备添加中
+                //4.还未注册，则设置AbstractChannelHandlerContext准备添加中
                 newCtx.setAddPending();
-                // 添加 PendingHandlerCallback 回调
+                //5.添加PendingHandlerCallback回调
                 callHandlerCallbackLater(newCtx, true);
                 return this;
             }
@@ -712,10 +713,17 @@ public class DefaultChannelPipeline implements ChannelPipeline {
         oldCtx.next = newCtx;
     }
 
+    /**
+     * 检查ChannelHandler是否重复添加，如果ChannelHandler已经被重复添加则检查是否标注了@Sharable，
+     * 标注了那么就允许重复添加，反之没有标注则不允许再次添加
+     *
+     * 是否添加的标记是保存在ChannelHandler的一个added字段内部
+     *
+     * */
     private static void checkMultiplicity(ChannelHandler handler) {
         if (handler instanceof ChannelHandlerAdapter) {
             ChannelHandlerAdapter h = (ChannelHandlerAdapter) handler;
-            // 若已经添加，并且未使用 @Sharable 注解，则抛出异常
+            //1.若已经添加且未使用@Sharable注解，则抛出异常
             if (!h.isSharable() && h.added) {
                 throw new ChannelPipelineException(
                         h.getClass().getName() +
@@ -1274,13 +1282,13 @@ public class DefaultChannelPipeline implements ChannelPipeline {
     private void callHandlerCallbackLater(AbstractChannelHandlerContext ctx, boolean added) {
         assert !registered;
 
-        // 创建 PendingHandlerCallback 对象
+        //1.创建PendingHandlerCallback对象
         PendingHandlerCallback task = added ? new PendingHandlerAddedTask(ctx) : new PendingHandlerRemovedTask(ctx);
         PendingHandlerCallback pending = pendingHandlerCallbackHead;
-        // 若原 pendingHandlerCallbackHead 不存在，则赋值给它
+        //2.若原 pendingHandlerCallbackHead 不存在，则赋值给它
         if (pending == null) {
             pendingHandlerCallbackHead = task;
-        // 若原 pendingHandlerCallbackHead 已存在，则最后一个回调指向新创建的回调
+        //3.若原pendingHandlerCallbackHead已存在，则最后一个回调指向新创建的回调
         } else {
             // Find the tail of the linked-list.
             while (pending.next != null) {
@@ -1393,16 +1401,19 @@ public class DefaultChannelPipeline implements ChannelPipeline {
 
         @Override
         public void channelActive(ChannelHandlerContext ctx) throws Exception {
+            //protected类型空方法，可由子类实现
             onUnhandledInboundChannelActive();
         }
 
         @Override
         public void channelInactive(ChannelHandlerContext ctx) throws Exception {
+            //protected类型空方法，可由子类实现
             onUnhandledInboundChannelInactive();
         }
 
         @Override
         public void channelWritabilityChanged(ChannelHandlerContext ctx) throws Exception {
+            //protected类型空方法，可由子类实现
             onUnhandledChannelWritabilityChanged();
         }
 
@@ -1419,16 +1430,19 @@ public class DefaultChannelPipeline implements ChannelPipeline {
 
         @Override
         public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
+            //当ChannelPipeline尾部捕获用户没有处理的异常的，调用一次该方法,主要是记录一次warn日志
             onUnhandledInboundException(cause);
         }
 
         @Override
         public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
+            //当ChannelPipeline尾部捕获用户没有处理的异常的，调用一次该方法,主要是记录一次warn日志
             onUnhandledInboundMessage(msg);
         }
 
         @Override
         public void channelReadComplete(ChannelHandlerContext ctx) throws Exception {
+            //protected类型空方法，可由子类实现
             onUnhandledInboundChannelReadComplete();
         }
     }

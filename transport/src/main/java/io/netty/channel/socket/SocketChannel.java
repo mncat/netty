@@ -23,13 +23,28 @@ import java.net.InetSocketAddress;
  * A TCP/IP socket {@link Channel}.
  */
 public interface SocketChannel extends DuplexChannel {
+
+    /**
+     * 父Channel
+     * */
     @Override
     ServerSocketChannel parent();
 
+    /**
+     * 返回Channel配置对象
+     * */
     @Override
     SocketChannelConfig config();
+
+    /**
+     * 返回本地地址
+     * */
     @Override
     InetSocketAddress localAddress();
+
+    /**
+     * 返回远程地址
+     * */
     @Override
     InetSocketAddress remoteAddress();
 }

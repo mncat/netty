@@ -152,15 +152,18 @@ public class ServerBootstrap extends AbstractBootstrap<ServerBootstrap, ServerCh
         return this;
     }
 
+    /**
+     * 初始化Channel
+     * */
     @Override
     void init(Channel channel) throws Exception {
-        // 初始化 Channel 的可选项集合
+        //1.初始化Channel选项集合
         final Map<ChannelOption<?>, Object> options = options0();
         synchronized (options) {
             setChannelOptions(channel, options, logger);
         }
 
-        // 初始化 Channel 的属性集合
+        //2.初始化Channel属性集合
         final Map<AttributeKey<?>, Object> attrs = attrs0();
         synchronized (attrs) {
             for (Entry<AttributeKey<?>, Object> e: attrs.entrySet()) {
@@ -172,7 +175,7 @@ public class ServerBootstrap extends AbstractBootstrap<ServerBootstrap, ServerCh
 
         ChannelPipeline p = channel.pipeline();
 
-        // 记录当前的属性
+        //3.记录当前的属性
         final EventLoopGroup currentChildGroup = childGroup;
         final ChannelHandler currentChildHandler = childHandler;
         final Entry<ChannelOption<?>, Object>[] currentChildOptions;
@@ -184,7 +187,7 @@ public class ServerBootstrap extends AbstractBootstrap<ServerBootstrap, ServerCh
             currentChildAttrs = childAttrs.entrySet().toArray(newAttrArray(0));
         }
 
-        // 添加 ChannelInitializer 对象到 pipeline 中，用于后续初始化 ChannelHandler 到 pipeline 中。
+        //4.添加ChannelInitializer对象到pipeline中，用于后续初始化ChannelHandler到pipeline中。
         p.addLast(new ChannelInitializer<Channel>() {
 
             @Override
@@ -192,13 +195,13 @@ public class ServerBootstrap extends AbstractBootstrap<ServerBootstrap, ServerCh
                 System.out.println(Thread.currentThread() + ": user handler");
                 final ChannelPipeline pipeline = ch.pipeline();
 
-                // 添加配置的 ChannelHandler 到 pipeline 中。
+                //5.添加配置的ChannelHandler到pipeline中。
                 ChannelHandler handler = config.handler();
                 if (handler != null) {
                     pipeline.addLast(handler);
                 }
 
-                // 添加 ServerBootstrapAcceptor 到 pipeline 中。
+                //6.添加 ServerBootstrapAcceptor到pipeline中。
                 // 使用 EventLoop 执行的原因，参见 https://github.com/lightningMan/netty/commit/4638df20628a8987c8709f0f8e5f3679a914ce1a
                 ch.eventLoop().execute(new Runnable() {
                     @Override
@@ -271,26 +274,23 @@ public class ServerBootstrap extends AbstractBootstrap<ServerBootstrap, ServerCh
         @Override
         @SuppressWarnings("unchecked")
         public void channelRead(ChannelHandlerContext ctx, Object msg) {
-            // 老艿艿：如下的注释，先暂时认为是接受的客户端的 NioSocketChannel
-
-            // 接受的客户端的 NioSocketChannel 对象
+            //1.接受的客户端Channel
             final Channel child = (Channel) msg;
-            // 添加 NioSocketChannel 的处理器
+            //2.添加处理器
             child.pipeline().addLast(childHandler);
-            // 设置 NioSocketChannel 的配置项
+            //3.设置Channel选项参数
             setChannelOptions(child, childOptions, logger);
-            // 设置 NioSocketChannel 的属性
+            //4.设置Channel属性
             for (Entry<AttributeKey<?>, Object> e: childAttrs) {
                 child.attr((AttributeKey<Object>) e.getKey()).set(e.getValue());
             }
 
+            //5.将客户端channel注册到work EventLoop线程池，注册失败或者抛出异常则关闭channel
             try {
-                // 注册客户端的 NioSocketChannel 到 work EventLoop 中。
                 childGroup.register(child).addListener(new ChannelFutureListener() {
-
                     @Override
                     public void operationComplete(ChannelFuture future) throws Exception {
-                        // 注册失败，关闭客户端的 NioSocketChannel
+                        //6.注册失败，关闭客户端的NioSocketChannel
                         if (!future.isSuccess()) {
                             forceClose(child, future.cause());
                         }
@@ -298,7 +298,7 @@ public class ServerBootstrap extends AbstractBootstrap<ServerBootstrap, ServerCh
 
                 });
             } catch (Throwable t) {
-                // 发生异常，强制关闭客户端的 NioSocketChannel
+                //7.发生异常，强制关闭客户端的 NioSocketChannel
                 forceClose(child, t);
             }
         }
@@ -312,15 +312,15 @@ public class ServerBootstrap extends AbstractBootstrap<ServerBootstrap, ServerCh
         public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
             final ChannelConfig config = ctx.channel().config();
             if (config.isAutoRead()) {
-                // 关闭接受新的客户端连接
+                //1.关闭接受新的客户端连接
                 // stop accept new connections for 1 second to allow the channel to recover
                 // See https://github.com/netty/netty/issues/1328
                 config.setAutoRead(false);
-                // 发起 1 秒的延迟任务，恢复重启开启接受新的客户端连接
+                //2.发起 1 秒的延迟任务，恢复重启开启接受新的客户端连接
                 ctx.channel().eventLoop().schedule(enableAutoReadTask, 1, TimeUnit.SECONDS);
             }
 
-            // 继续传播 exceptionCaught 给下一个节点
+            //2.继续传播 exceptionCaught 给下一个节点
             // still let the exceptionCaught event flow through the pipeline to give the user
             // a chance to do something with it
             ctx.fireExceptionCaught(cause);
