@@ -143,6 +143,9 @@ public class NioSocketChannel extends AbstractNioByteChannel implements io.netty
         return (SocketChannel) super.javaChannel();
     }
 
+    /**
+     * 判断Channel是否活跃
+     */
     @Override
     public boolean isActive() {
         SocketChannel ch = javaChannel();
@@ -160,6 +163,9 @@ public class NioSocketChannel extends AbstractNioByteChannel implements io.netty
         return javaChannel().socket().isInputShutdown() || !isActive();
     }
 
+    /**
+     * 判断Channel是否关闭
+     */
     @Override
     public boolean isShutdown() {
         Socket socket = javaChannel().socket();
@@ -186,11 +192,15 @@ public class NioSocketChannel extends AbstractNioByteChannel implements io.netty
         }
     }
 
+
     @Override
     public ChannelFuture shutdownOutput() {
         return shutdownOutput(newPromise());
     }
 
+    /**
+     * 关闭输出
+     */
     @Override
     public ChannelFuture shutdownOutput(final ChannelPromise promise) {
         final EventLoop loop = eventLoop();
@@ -217,6 +227,10 @@ public class NioSocketChannel extends AbstractNioByteChannel implements io.netty
         return isInputShutdown();
     }
 
+
+    /**
+     * 关闭输入
+     */
     @Override
     public ChannelFuture shutdownInput(final ChannelPromise promise) {
         EventLoop loop = eventLoop();
@@ -238,6 +252,9 @@ public class NioSocketChannel extends AbstractNioByteChannel implements io.netty
         return shutdown(newPromise());
     }
 
+    /**
+     * 关闭
+     */
     @Override
     public ChannelFuture shutdown(final ChannelPromise promise) {
         ChannelFuture shutdownOutputFuture = shutdownOutput();
@@ -285,20 +302,21 @@ public class NioSocketChannel extends AbstractNioByteChannel implements io.netty
             promise.setSuccess();
         }
     }
+
     private void shutdownInput0(final ChannelPromise promise) {
         try {
-            // 关闭 Channel 数据的读取
+            //1.关闭Channel数据的读取
             shutdownInput0();
-            // 通知 Promise 成功
+            //2.成功了、通知Promise
             promise.setSuccess();
         } catch (Throwable t) {
-            // 通知 Promise 失败
+            //3.失败了、通知Promise
             promise.setFailure(t);
         }
     }
 
     private void shutdownInput0() throws Exception {
-        // 调用 Java NIO Channel 的 shutdownInput 方法
+        //1.根据Java版本调用Java NIO Channel的shutdownInput方法
         if (PlatformDependent.javaVersion() >= 7) {
             javaChannel().shutdownInput();
         } else {
