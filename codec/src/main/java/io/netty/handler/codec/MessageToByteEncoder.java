@@ -17,11 +17,7 @@ package io.netty.handler.codec;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelOutboundHandler;
-import io.netty.channel.ChannelOutboundHandlerAdapter;
-import io.netty.channel.ChannelPipeline;
-import io.netty.channel.ChannelPromise;
+import io.netty.channel.*;
 import io.netty.util.ReferenceCountUtil;
 import io.netty.util.internal.TypeParameterMatcher;
 
@@ -29,8 +25,8 @@ import io.netty.util.internal.TypeParameterMatcher;
 /**
  * {@link ChannelOutboundHandlerAdapter} which encodes message in a stream-like fashion from one message to an
  * {@link ByteBuf}.
- *
- *
+ * ChannelOutboundHandlerAdapter从消息到ByteBuf编码消息
+ * 下面是实现的示例，将Integer编码为ByteBuf
  * Example implementation which encodes {@link Integer}s to a {@link ByteBuf}.
  *
  * <pre>
@@ -50,11 +46,12 @@ public abstract class MessageToByteEncoder<I> extends ChannelOutboundHandlerAdap
      */
     private final TypeParameterMatcher matcher;
     /**
-     * 是否偏向使用 Direct 内存
+     * 是否偏向使用Direct直接内存
      */
     private final boolean preferDirect;
 
     /**
+     * 构造方法
      * see {@link #MessageToByteEncoder(boolean)} with {@code true} as boolean parameter.
      */
     protected MessageToByteEncoder() {
@@ -62,6 +59,7 @@ public abstract class MessageToByteEncoder<I> extends ChannelOutboundHandlerAdap
     }
 
     /**
+     * 构造方法
      * see {@link #MessageToByteEncoder(Class, boolean)} with {@code true} as boolean value.
      */
     protected MessageToByteEncoder(Class<? extends I> outboundMessageType) {
@@ -70,10 +68,11 @@ public abstract class MessageToByteEncoder<I> extends ChannelOutboundHandlerAdap
 
     /**
      * Create a new instance which will try to detect the types to match out of the type parameter of the class.
+     * 构造方法
      *
-     * @param preferDirect          {@code true} if a direct {@link ByteBuf} should be tried to be used as target for
-     *                              the encoded messages. If {@code false} is used it will allocate a heap
-     *                              {@link ByteBuf}, which is backed by an byte array.
+     * @param preferDirect {@code true} if a direct {@link ByteBuf} should be tried to be used as target for
+     *                     the encoded messages. If {@code false} is used it will allocate a heap
+     *                     {@link ByteBuf}, which is backed by an byte array.
      */
     protected MessageToByteEncoder(boolean preferDirect) {
         // <1> 获得 matcher
@@ -84,10 +83,10 @@ public abstract class MessageToByteEncoder<I> extends ChannelOutboundHandlerAdap
     /**
      * Create a new instance
      *
-     * @param outboundMessageType   The type of messages to match
-     * @param preferDirect          {@code true} if a direct {@link ByteBuf} should be tried to be used as target for
-     *                              the encoded messages. If {@code false} is used it will allocate a heap
-     *                              {@link ByteBuf}, which is backed by an byte array.
+     * @param outboundMessageType The type of messages to match
+     * @param preferDirect        {@code true} if a direct {@link ByteBuf} should be tried to be used as target for
+     *                            the encoded messages. If {@code false} is used it will allocate a heap
+     *                            {@link ByteBuf}, which is backed by an byte array.
      */
     protected MessageToByteEncoder(Class<? extends I> outboundMessageType, boolean preferDirect) {
         // <2> 获得 matcher
@@ -96,6 +95,8 @@ public abstract class MessageToByteEncoder<I> extends ChannelOutboundHandlerAdap
     }
 
     /**
+     * 返回true表示消息需要被处理
+     * 返回false就会将消息传递给下一个ChannelOutboundHandler处理
      * Returns {@code true} if the given message should be handled. If {@code false} it will be passed to the next
      * {@link ChannelOutboundHandler} in the {@link ChannelPipeline}.
      */
@@ -107,35 +108,33 @@ public abstract class MessageToByteEncoder<I> extends ChannelOutboundHandlerAdap
     public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
         ByteBuf buf = null;
         try {
-            // 判断是否为匹配的消息
+            //1.判断是否为匹配的消息
             if (acceptOutboundMessage(msg)) {
                 @SuppressWarnings("unchecked")
                 I cast = (I) msg;
-                // 申请 buf
+                //2.分配buf
                 buf = allocateBuffer(ctx, cast, preferDirect);
-                // 编码
                 try {
+                    //3.编码，子类实现
                     encode(ctx, cast, buf);
                 } finally {
-                    // 释放 msg
+                    //4.释放msg
                     ReferenceCountUtil.release(cast);
                 }
-
-                // buf 可读，说明有编码到数据
+                //5.buf可读，说明有编码到数据
                 if (buf.isReadable()) {
-                    // 写入 buf 到下一个节点
+                    //6.写入buf到下一个节点
                     ctx.write(buf, promise);
                 } else {
-                    // 释放 buf
+                    //7.反之就释放buf
                     buf.release();
-                    // 写入 EMPTY_BUFFER 到下一个节点，为了 promise 的回调
+                    //8.写入EMPTY_BUFFER到下一个节点，为了promise的回调
                     ctx.write(Unpooled.EMPTY_BUFFER, promise);
                 }
-
-                // 置空 buf
+                //9.置空buf
                 buf = null;
             } else {
-                // 提交 write 事件给下一个节点
+                //10.不匹配，就提交write事件，交给下一个节点处理
                 ctx.write(msg, promise);
             }
         } catch (EncoderException e) {
@@ -143,7 +142,7 @@ public abstract class MessageToByteEncoder<I> extends ChannelOutboundHandlerAdap
         } catch (Throwable e) {
             throw new EncoderException(e);
         } finally {
-            // 释放 buf
+            //11.释放buf
             if (buf != null) {
                 buf.release();
             }
@@ -163,18 +162,18 @@ public abstract class MessageToByteEncoder<I> extends ChannelOutboundHandlerAdap
     }
 
     /**
+     * 子类重写的方法，将message消息编码成ByteBuf
      * Encode a message into a {@link ByteBuf}. This method will be called for each written message that can be handled
      * by this encoder.
      *
-     * @param ctx           the {@link ChannelHandlerContext} which this {@link MessageToByteEncoder} belongs to
-     * @param msg           the message to encode
-     * @param out           the {@link ByteBuf} into which the encoded message will be written
-     * @throws Exception    is thrown if an error occurs
+     * @param ctx the {@link ChannelHandlerContext} which this {@link MessageToByteEncoder} belongs to
+     * @param msg the message to encode
+     * @param out the {@link ByteBuf} into which the encoded message will be written
+     * @throws Exception is thrown if an error occurs
      */
     protected abstract void encode(ChannelHandlerContext ctx, I msg, ByteBuf out) throws Exception;
 
     protected boolean isPreferDirect() {
         return preferDirect;
     }
-
 }

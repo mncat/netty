@@ -25,25 +25,31 @@ import io.netty.util.concurrent.EventExecutor;
 import java.nio.channels.Channels;
 
 /**
+ * ChannelHandlerContext使ChannelHandler可以和他所属的ChannelPipeline以及其中的ChannelHandler相互作用
+ * <p>
+ * ChannelHandler可以修改后面的一个ChannelHandler，或者修改ChannelPipeline
+ * <p>
  * Enables a {@link ChannelHandler} to interact with its {@link ChannelPipeline}
  * and other handlers. Among other things a handler can notify the next {@link ChannelHandler} in the
  * {@link ChannelPipeline} as well as modify the {@link ChannelPipeline} it belongs to dynamically.
  *
  * <h3>Notify</h3>
- *
+ * 通知ChannelPipeline中最近的ChannelHandler
+ * <p>
  * You can notify the closest handler in the same {@link ChannelPipeline} by calling one of the various methods
  * provided here.
- *
+ * <p>
  * Please refer to {@link ChannelPipeline} to understand how an event flows.
  *
  * <h3>Modifying a pipeline</h3>
- *
+ * 通知ChannelPipeline
+ * <p>
  * You can get the {@link ChannelPipeline} your handler belongs to by calling
  * {@link #pipeline()}.  A non-trivial application could insert, remove, or
  * replace handlers in the pipeline dynamically at runtime.
  *
  * <h3>Retrieving for later use</h3>
- *
+ * 可以保存ChannelHandlerContext来使用，比如触发一个事件，即使在不同的线程
  * You can keep the {@link ChannelHandlerContext} for later use, such as
  * triggering an event outside the handler methods, even from a different thread.
  * <pre>
@@ -63,14 +69,17 @@ import java.nio.channels.Channels;
  * </pre>
  *
  * <h3>Storing stateful information</h3>
- *
+ * <p>
  * {@link #attr(AttributeKey)} allow you to
  * store and access stateful information that is related with a handler and its
  * context.  Please refer to {@link ChannelHandler} to learn various recommended
  * ways to manage stateful information.
  *
  * <h3>A handler can have more than one context</h3>
- *
+ * 一个ChannelHandler可以有多个context，因为它可以被添加到多个ChannelPipeline，因此它可
+ * 以有多个ChannelHandlerContext，由此假如一个ChannelHandler被添加到多个ChannelHandler的
+ * 话，它可以被多个不同的ChannelHandlerContext调用，
+ * <p>
  * Please note that a {@link ChannelHandler} instance can be added to more than
  * one {@link ChannelPipeline}.  It means a single {@link ChannelHandler}
  * instance can have more than one {@link ChannelHandlerContext} and therefore
@@ -125,9 +134,7 @@ import java.nio.channels.Channels;
 public interface ChannelHandlerContext extends AttributeMap, ChannelInboundInvoker, ChannelOutboundInvoker {
 
     /**
-     * 下面几个是组件操作方法，channel,executor(eventLoop),handler,pipeline和本身，比如获取channel等
-     * */
-    /**
+     * 下面几个是组件操作方法，channel,executor(EventExecutor),name,handler,pipeline和本身，比如获取channel等
      * Return the {@link Channel} which is bound to the {@link ChannelHandlerContext}.
      */
     Channel channel();
@@ -158,7 +165,7 @@ public interface ChannelHandlerContext extends AttributeMap, ChannelInboundInvok
 
     /**
      * 下面方法实现传播，继承于ChannelInboundInvoker和ChannelOutboundInvoker接口
-     * */
+     */
     @Override
     ChannelHandlerContext fireChannelRegistered();
 
@@ -193,14 +200,13 @@ public interface ChannelHandlerContext extends AttributeMap, ChannelInboundInvok
     ChannelHandlerContext flush();
 
     /**
-     * 内存分配方法
-     * */
-    /**
+     * 返回ChannelPipeline
      * Return the assigned {@link ChannelPipeline}
      */
     ChannelPipeline pipeline();
 
     /**
+     * 内存分配方法
      * Return the assigned {@link ByteBufAllocator} which will be used to allocate {@link ByteBuf}s.
      */
     ByteBufAllocator alloc();

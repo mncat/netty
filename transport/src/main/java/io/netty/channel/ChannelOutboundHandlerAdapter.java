@@ -20,14 +20,14 @@ import java.net.SocketAddress;
 /**
  * Skeleton implementation of a {@link ChannelOutboundHandler}. This implementation just forwards each method call via
  * the {@link ChannelHandlerContext}.
- * 默认无任何逻辑，直接转发到下一个节点，子类如果有自定义的逻辑可重写对应的方法。
+ * ChannelOutboundHandler的骨架实现，默认无任何逻辑，直接转发到下一个节点，子类如果有自定义的逻辑可重写对应的方法。
  */
 public class ChannelOutboundHandlerAdapter extends ChannelHandlerAdapter implements ChannelOutboundHandler {
 
     /**
      * Calls {@link ChannelHandlerContext#bind(SocketAddress, ChannelPromise)} to forward
      * to the next {@link ChannelOutboundHandler} in the {@link ChannelPipeline}.
-     *
+     * 转发到下一个节点，子类可重写
      * Sub-classes may override this method to change behavior.
      */
     @Override
@@ -38,7 +38,7 @@ public class ChannelOutboundHandlerAdapter extends ChannelHandlerAdapter impleme
     /**
      * Calls {@link ChannelHandlerContext#connect(SocketAddress, SocketAddress, ChannelPromise)} to forward
      * to the next {@link ChannelOutboundHandler} in the {@link ChannelPipeline}.
-     *
+     * 转发到下一个节点，子类可重写
      * Sub-classes may override this method to change behavior.
      */
     @Override
@@ -49,7 +49,7 @@ public class ChannelOutboundHandlerAdapter extends ChannelHandlerAdapter impleme
     /**
      * Calls {@link ChannelHandlerContext#disconnect(ChannelPromise)} to forward
      * to the next {@link ChannelOutboundHandler} in the {@link ChannelPipeline}.
-     *
+     * 转发到下一个节点，子类可重写
      * Sub-classes may override this method to change behavior.
      */
     @Override
@@ -60,7 +60,7 @@ public class ChannelOutboundHandlerAdapter extends ChannelHandlerAdapter impleme
     /**
      * Calls {@link ChannelHandlerContext#close(ChannelPromise)} to forward
      * to the next {@link ChannelOutboundHandler} in the {@link ChannelPipeline}.
-     *
+     * 转发到下一个节点，子类可重写
      * Sub-classes may override this method to change behavior.
      */
     @Override
@@ -71,7 +71,7 @@ public class ChannelOutboundHandlerAdapter extends ChannelHandlerAdapter impleme
     /**
      * Calls {@link ChannelHandlerContext#deregister(ChannelPromise)} to forward
      * to the next {@link ChannelOutboundHandler} in the {@link ChannelPipeline}.
-     *
+     * 转发到下一个节点，子类可重写
      * Sub-classes may override this method to change behavior.
      */
     @Override
@@ -82,7 +82,7 @@ public class ChannelOutboundHandlerAdapter extends ChannelHandlerAdapter impleme
     /**
      * Calls {@link ChannelHandlerContext#read()} to forward
      * to the next {@link ChannelOutboundHandler} in the {@link ChannelPipeline}.
-     *
+     * 转发到下一个节点，子类可重写
      * Sub-classes may override this method to change behavior.
      */
     @Override
@@ -93,7 +93,7 @@ public class ChannelOutboundHandlerAdapter extends ChannelHandlerAdapter impleme
     /**
      * Calls {@link ChannelHandlerContext#write(Object, ChannelPromise)} to forward
      * to the next {@link ChannelOutboundHandler} in the {@link ChannelPipeline}.
-     *
+     * 转发到下一个节点，子类可重写
      * Sub-classes may override this method to change behavior.
      */
     @Override
@@ -104,12 +104,11 @@ public class ChannelOutboundHandlerAdapter extends ChannelHandlerAdapter impleme
     /**
      * Calls {@link ChannelHandlerContext#flush()} to forward
      * to the next {@link ChannelOutboundHandler} in the {@link ChannelPipeline}.
-     *
+     * 转发到下一个节点，子类可重写
      * Sub-classes may override this method to change behavior.
      */
     @Override
     public void flush(ChannelHandlerContext ctx) throws Exception {
         ctx.flush();
     }
-
 }

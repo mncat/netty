@@ -747,40 +747,44 @@ public class DefaultChannelPipeline implements ChannelPipeline {
         }
     }
 
+    /**
+     * 添加ChannelHandler到ChannelPipeline成功后出发回调
+     * */
     private void callHandlerAdded0(final AbstractChannelHandlerContext ctx) {
         try {
             // We must call setAddComplete before calling handlerAdded. Otherwise if the handlerAdded method generates
             // any pipeline events ctx.handler() will miss them because the state will not allow it.
-            // 设置 AbstractChannelHandlerContext 已添加
+            //1.将AbstractChannelHandlerContext的添加状态设置为已添加
             ctx.setAddComplete();
-            // 回调 ChannelHandler 添加完成( added )事件
+            //2.回调ChannelHandler的添加完成(added)事件(在添加完成之后，ChannelHandler还可以回调做点事情)
             ctx.handler().handlerAdded(ctx);
         } catch (Throwable t) {
-            // 发生异常，移除该节点
+            //3.如果发生异常，移除该节点
             boolean removed = false;
             try {
-                remove0(ctx); // 移除
+                //4.移除
+                remove0(ctx);
                 try {
-                    ctx.handler().handlerRemoved(ctx); // 回调 ChannelHandler 移除完成( removed )事件
+                    //5.回调ChannelHandler移除完成(removed)事件
+                    ctx.handler().handlerRemoved(ctx);
                 } finally {
-                    ctx.setRemoved(); // 标记节点已移除
+                    //6.标记节点已移除
+                    ctx.setRemoved();
                 }
-                removed = true; // 标记移除成功
+                //7.标记移除成功
+                removed = true;
             } catch (Throwable t2) {
                 if (logger.isWarnEnabled()) {
                     logger.warn("Failed to remove a handler: " + ctx.name(), t2);
                 }
             }
-
-            // 触发异常的传播
+            //8.触发异常的传播
             if (removed) {
                 fireExceptionCaught(new ChannelPipelineException(
-                        ctx.handler().getClass().getName() +
-                        ".handlerAdded() has thrown an exception; removed.", t));
+                        ctx.handler().getClass().getName() + ".handlerAdded() has thrown an exception; removed.", t));
             } else {
                 fireExceptionCaught(new ChannelPipelineException(
-                        ctx.handler().getClass().getName() +
-                        ".handlerAdded() has thrown an exception; also failed to remove.", t));
+                        ctx.handler().getClass().getName() + ".handlerAdded() has thrown an exception; also failed to remove.", t));
             }
         }
     }
@@ -1269,19 +1273,21 @@ public class DefaultChannelPipeline implements ChannelPipeline {
 
     private void callHandlerAddedForAllHandlers() {
         final PendingHandlerCallback pendingHandlerCallbackHead;
-        // 获得 pendingHandlerCallbackHead
+        //1.加锁、获得 pendingHandlerCallbackHead
         synchronized (this) {
             assert !registered;
 
             // This Channel itself was registered.
-            registered = true; // 标记已注册
-
+            //2.标记已注册
+            registered = true;
+            //3.链表头结点
             pendingHandlerCallbackHead = this.pendingHandlerCallbackHead;
             // Null out so it can be GC'ed.
-            this.pendingHandlerCallbackHead = null; // 置空，help gc
+            // 置空，help gc
+            this.pendingHandlerCallbackHead = null;
         }
 
-        // 顺序向下，执行 PendingHandlerCallback 的回调
+        //4.顺序遍历任务链表，执行全部PendingHandlerCallback回调任务
         // This must happen outside of the synchronized(...) block as otherwise handlerAdded(...) may be called while
         // holding the lock and so produce a deadlock if handlerAdded(...) will try to add another handler from outside
         // the EventLoop.
@@ -1465,8 +1471,7 @@ public class DefaultChannelPipeline implements ChannelPipeline {
         }
     }
 
-    final class HeadContext extends AbstractChannelHandlerContext
-            implements ChannelOutboundHandler, ChannelInboundHandler {
+    final class HeadContext extends AbstractChannelHandlerContext implements ChannelOutboundHandler, ChannelInboundHandler {
 
         private final Unsafe unsafe;
 
@@ -1516,6 +1521,9 @@ public class DefaultChannelPipeline implements ChannelPipeline {
             unsafe.deregister(promise);
         }
 
+        /**
+         * read方法主要逻辑在beginRead，beginRead方法设定底层关心read事件
+         * */
         @Override
         public void read(ChannelHandlerContext ctx) {
             unsafe.beginRead();
@@ -1554,10 +1562,10 @@ public class DefaultChannelPipeline implements ChannelPipeline {
 
         @Override
         public void channelActive(ChannelHandlerContext ctx) throws Exception {
-            // 传播 Channel active 事件给下一个 Inbound 节点
+            //1.传播Channel active 事件给下一个 Inbound 节点
             ctx.fireChannelActive();
 
-            // 执行 read 逻辑
+            //2.执行read逻辑
             readIfIsAutoRead();
         }
 

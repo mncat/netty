@@ -1006,18 +1006,19 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
 
         @Override
         public final void beginRead() {
-            // 判断是否在 EventLoop 的线程中。
+            //1.判断是否在 EventLoop 的线程中。
             assertEventLoop();
 
-            // Channel 必须激活
+            //2.Channel必须激活，否则直接return
             if (!isActive()) {
                 return;
             }
 
-            // 执行开始读取
+            //3.执行开始读取
             try {
                 doBeginRead();
             } catch (final Exception e) {
+                //4.处理异常
                 invokeLater(new Runnable() {
                     @Override
                     public void run() {

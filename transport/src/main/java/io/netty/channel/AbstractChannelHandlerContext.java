@@ -35,42 +35,47 @@ import io.netty.util.internal.logging.InternalLoggerFactory;
 import java.net.SocketAddress;
 import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
 
-abstract class AbstractChannelHandlerContext extends DefaultAttributeMap
-        implements ChannelHandlerContext, ResourceLeakHint {
+abstract class AbstractChannelHandlerContext extends DefaultAttributeMap implements ChannelHandlerContext, ResourceLeakHint {
 
     private static final InternalLogger logger = InternalLoggerFactory.getInstance(AbstractChannelHandlerContext.class);
 
     /**
      * Neither {@link ChannelHandler#handlerAdded(ChannelHandlerContext)}
      * nor {@link ChannelHandler#handlerRemoved(ChannelHandlerContext)} was called.
+     * 初始化状态, handlerAdded和handlerRemoved都还没有被调用的状态
      */
-    private static final int INIT = 0; // 初始化
+    private static final int INIT = 0;
     /**
      * {@link ChannelHandler#handlerAdded(ChannelHandlerContext)} is about to be called.
+     * 准备添加的状态，handlerAdded即将被调用
      */
-    private static final int ADD_PENDING = 1; // 添加准备中
+    private static final int ADD_PENDING = 1;
     /**
      * {@link ChannelHandler#handlerAdded(ChannelHandlerContext)} was called.
+     * 已经添加的状态，handlerAdded已经被调用
      */
-    private static final int ADD_COMPLETE = 2; // 已添加
+    private static final int ADD_COMPLETE = 2;
     /**
      * {@link ChannelHandler#handlerRemoved(ChannelHandlerContext)} was called.
+     * 已经移除的状态，handlerRemoved已经被调用
      */
-    private static final int REMOVE_COMPLETE = 3; // 已移除
+    private static final int REMOVE_COMPLETE = 3;
 
     /**
-     * {@link #handlerState} 的原子更新器
+     * {@link #handlerState} 状态的原子更新器，CAS机制更新状态变量
      */
     private static final AtomicIntegerFieldUpdater<AbstractChannelHandlerContext> HANDLER_STATE_UPDATER = AtomicIntegerFieldUpdater.newUpdater(AbstractChannelHandlerContext.class, "handlerState");
 
     /**
-     * 链表上一个节点
-     */
-    volatile AbstractChannelHandlerContext next;
-    /**
      * 链表下一个节点
      */
+    volatile AbstractChannelHandlerContext next;
+
+    /**
+     * 链表上一个节点
+     */
     volatile AbstractChannelHandlerContext prev;
+
     /**
      * 标识handler类型，是否为inbound或者是否为outbound
      */
@@ -81,10 +86,12 @@ abstract class AbstractChannelHandlerContext extends DefaultAttributeMap
      * ChannelHandlerContext节点所属的pipeline
      */
     private final DefaultChannelPipeline pipeline;
+
     /**
      * 名字
      */
     private final String name;
+
     /**
      * 是否使用有序的 EventExecutor ( {@link #executor} )，即 OrderedEventExecutor
      */
@@ -93,9 +100,10 @@ abstract class AbstractChannelHandlerContext extends DefaultAttributeMap
     // Will be set to null if no child executor should be used, otherwise it will be set to the
     // child executor.
     /**
-     * EventExecutor 对象
+     * EventExecutor 对象,没有child executor时会被设为为null
      */
     final EventExecutor executor;
+
     /**
      * 成功的 Promise 对象
      */
@@ -120,7 +128,7 @@ abstract class AbstractChannelHandlerContext extends DefaultAttributeMap
      */
     private Runnable invokeFlushTask;
     /**
-     * 处理器状态
+     * 处理器初始状态
      */
     private volatile int handlerState = INIT;
 
@@ -165,17 +173,27 @@ abstract class AbstractChannelHandlerContext extends DefaultAttributeMap
         return name;
     }
 
+    /**
+     * 触发ChannelPipeline中后面一个ChannelInboundHandler的channelRegistered方法被调用
+     * */
     @Override
     public ChannelHandlerContext fireChannelRegistered() {
+        //1.findContextInbound会向后获得第一个ChannelInboundHandler
         invokeChannelRegistered(findContextInbound());
         return this;
     }
 
+    /**
+     * 触发next的channelRegistered方法被调用
+     * */
     static void invokeChannelRegistered(final AbstractChannelHandlerContext next) {
+        //1.获取ChannelHandlerContext的EventExecutor
         EventExecutor executor = next.executor();
+        //2.如果EventExecutor线程在EventLoop线程中，就直接调用
         if (executor.inEventLoop()) {
             next.invokeChannelRegistered();
         } else {
+            //3.反之则递交给executor执行
             executor.execute(new Runnable() {
                 @Override
                 public void run() {
@@ -185,12 +203,17 @@ abstract class AbstractChannelHandlerContext extends DefaultAttributeMap
         }
     }
 
+    /**
+     *  触发channelRegistered方法被调用
+     * */
     private void invokeChannelRegistered() {
         if (invokeHandler()) {
             try {
+                //1.触发channelRegistered方法被调用，handler属性就是内部包装的ChannelHandler对象
                 ((ChannelInboundHandler) handler()).channelRegistered(this);
             } catch (Throwable t) {
-                notifyHandlerException(t); // 通知 Inbound 事件的传播，发生异常
+                //2.通知 Inbound 事件的传播，发生异常
+                notifyHandlerException(t);
             }
         } else {
             fireChannelRegistered();
@@ -383,15 +406,24 @@ abstract class AbstractChannelHandlerContext extends DefaultAttributeMap
         }
     }
 
+    /**
+     * 触发ChannelPipeline中后面一个ChannelInboundHandler的channelRead方法被调用
+     * */
     @Override
     public ChannelHandlerContext fireChannelRead(final Object msg) {
+        //触发ChannelPipeline中后面一个ChannelInboundHandler的channelRead方法被调用
         invokeChannelRead(findContextInbound(), msg);
         return this;
     }
 
+    /**
+     * 触发ChannelPipeline中后面一个ChannelInboundHandler的channelRead方法被调用
+     * */
     static void invokeChannelRead(final AbstractChannelHandlerContext next, Object msg) {
+        //1.
         final Object m = next.pipeline.touch(ObjectUtil.checkNotNull(msg, "msg"), next);
         EventExecutor executor = next.executor();
+        //2.下面的套路一样
         if (executor.inEventLoop()) {
             next.invokeChannelRead(m);
         } else {
@@ -404,12 +436,17 @@ abstract class AbstractChannelHandlerContext extends DefaultAttributeMap
         }
     }
 
+    /**
+     * 调用下一个入站处理器的channelRead方法，将消息传递过去
+     * */
     private void invokeChannelRead(Object msg) {
         if (invokeHandler()) {
             try {
+                //1.调用内部的 ChannelHandler的channelRead方法
                 ((ChannelInboundHandler) handler()).channelRead(this, msg);
             } catch (Throwable t) {
-                notifyHandlerException(t); // 通知 Inbound 事件的传播，发生异常
+                //2.通知 Inbound 事件的传播，发生异常
+                notifyHandlerException(t);
             }
         } else {
             fireChannelRead(msg);
@@ -518,23 +555,28 @@ abstract class AbstractChannelHandlerContext extends DefaultAttributeMap
         return deregister(newPromise());
     }
 
+    /**
+     * bind方法的实现主体
+     * */
     @Override
     public ChannelFuture bind(final SocketAddress localAddress, final ChannelPromise promise) {
+        //1.参数校验
         if (localAddress == null) {
             throw new NullPointerException("localAddress");
         }
-        // 判断是否为合法的 Promise 对象
         if (isNotValidPromise(promise, false)) {
-            // cancelled
             return promise;
         }
 
-        // 获得下一个 Outbound 节点
+        //2.获得下一个ChannelOutboundHandler节点，注意的是在双向链表里面下一
+        // 个出站节点其实是往前寻找，下一个入站节点才是往后寻找
+        //另外需要注意的是获得的是ChannelHandlerContext,内部封装了ChannelHandler
         final AbstractChannelHandlerContext next = findContextOutbound();
-        // 获得下一个 Outbound 节点的执行器
+        //3.获得ChannelOutboundHandler的执行器
         EventExecutor executor = next.executor();
-        // 调用下一个 Outbound 节点的 bind 方法
+        //4.调用下一个ChannelOutboundHandler的bind方法
         if (executor.inEventLoop()) {
+            //5.还是固定模式，如果当前线程在EventLoop线程中,就直接执行，反之就提交给EventLoop线程执行
             next.invokeBind(localAddress, promise);
         } else {
             safeExecute(executor, new Runnable() {
@@ -547,16 +589,21 @@ abstract class AbstractChannelHandlerContext extends DefaultAttributeMap
         return promise;
     }
 
+    /**
+     * 绑定逻辑
+     * */
     private void invokeBind(SocketAddress localAddress, ChannelPromise promise) {
-        if (invokeHandler()) { // 判断是否符合的 ChannelHandler
+            //1.判断是否符合的ChannelHandler
+        if (invokeHandler()) {
             try {
-                // 调用该 ChannelHandler 的 bind 方法
+                //2.调用该ChannelHandler的bind方法
                 ((ChannelOutboundHandler) handler()).bind(this, localAddress, promise);
             } catch (Throwable t) {
-                notifyOutboundHandlerException(t, promise); // 通知 Outbound 事件的传播，发生异常
+                //3.通知Outbound事件的传播，发生异常
+                notifyOutboundHandlerException(t, promise);
             }
         } else {
-            // 跳过，传播 Outbound 事件给下一个节点
+            //4.跳过，传播Outbound事件给下一个节点
             bind(localAddress, promise);
         }
     }
@@ -1018,7 +1065,7 @@ abstract class AbstractChannelHandlerContext extends DefaultAttributeMap
     }
 
     private AbstractChannelHandlerContext findContextInbound() {
-        // 循环，向后获得一个 Inbound 节点
+        // 循环，向后获得一个ChannelInboundHandler节点
         AbstractChannelHandlerContext ctx = this;
         do {
             ctx = ctx.next;
@@ -1071,15 +1118,19 @@ abstract class AbstractChannelHandlerContext extends DefaultAttributeMap
     }
 
     /**
+     * 尽最大努力检测handlerAdded方法是否已经被调用，没有调用就返回false，如果调用了就返回true
      * Makes best possible effort to detect if {@link ChannelHandler#handlerAdded(ChannelHandlerContext)} was called
      * yet. If not return {@code false} and if called or could not detect return {@code true}.
+     *
+     * 如果返回false，就不能调用ChannelHandler，而是传播事件，因为有可能DefaultChannelPipeline已经将一个handler放进了双向链表，
+     * 但是尚未调用handlerAdded
      *
      * If this method returns {@code false} we will not invoke the {@link ChannelHandler} but just forward the event.
      * This is needed as {@link DefaultChannelPipeline} may already put the {@link ChannelHandler} in the linked-list
      * but not called {@link ChannelHandler#handlerAdded(ChannelHandlerContext)}.
      */
     private boolean invokeHandler() {
-        // Store in local variable to reduce volatile reads.
+        // 保存变量减少volatile读取 Store in local variable to reduce volatile reads.
         int handlerState = this.handlerState;
         return handlerState == ADD_COMPLETE || (!ordered && handlerState == ADD_PENDING);
     }

@@ -26,11 +26,13 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
+ * 处理IO事件、接受IO操作、并转发到ChannelPipeline中的下一个ChannelHandle
  * Handles an I/O event or intercepts an I/O operation, and forwards it to its next handler in
  * its {@link ChannelPipeline}.
  *
  * <h3>Sub-types</h3>
- * <p>
+ * <p> 子类：ChannelHandler自身包含的方法不多，通常我们需要实现它的子类，比如：ChannelInboundHandler、ChannelOutboundHandler
+ *  二者分别处理入站事件和出站事件
  * {@link ChannelHandler} itself does not provide many methods, but you usually have to implement one of its subtypes:
  * <ul>
  * <li>{@link ChannelInboundHandler} to handle inbound I/O events, and</li>
@@ -39,6 +41,7 @@ import java.lang.annotation.Target;
  * </p>
  * <p>
  * Alternatively, the following adapter classes are provided for your convenience:
+ * 下面的三个适配器类可能更方便的使用，分别处理入站事件、出站事件、双向事件
  * <ul>
  * <li>{@link ChannelInboundHandlerAdapter} to handle inbound I/O events,</li>
  * <li>{@link ChannelOutboundHandlerAdapter} to handle outbound I/O operations, and</li>
@@ -50,7 +53,7 @@ import java.lang.annotation.Target;
  * </p>
  *
  * <h3>The context object</h3>
- * <p>
+ * <p> ChannelHandler可以动态的修改pipeline，并且通过AttributeKey保存信息
  * A {@link ChannelHandler} is provided with a {@link ChannelHandlerContext}
  * object.  A {@link ChannelHandler} is supposed to interact with the
  * {@link ChannelPipeline} it belongs to via a context object.  Using the
@@ -157,7 +160,8 @@ import java.lang.annotation.Target;
  * <p>
  * In the example above which used an {@link AttributeKey},
  * you might have noticed the {@code @Sharable} annotation.
- * <p>
+ * <p>如果一个ChannelHandler标注了@Sharable注解，意味着它可以被多次的添加到多个ChannelPipeline，反之
+ * 则每一次添加都需要创建一个新的实例
  * If a {@link ChannelHandler} is annotated with the {@code @Sharable}
  * annotation, it means you can create an instance of the handler just once and
  * add it to one or more {@link ChannelPipeline}s multiple times without

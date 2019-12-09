@@ -22,16 +22,17 @@ import java.util.Map;
 
 /**
  * Skeleton implementation of a {@link ChannelHandler}.
+ * ChannelHandler的骨架实现
  */
 public abstract class ChannelHandlerAdapter implements ChannelHandler {
 
     /**
-     * 是否已经初始化
-     * 仅用于完整性检查，所以不需要volatile；Not using volatile because it's used only for a sanity check.
+     * 是否已经初始化，仅用于完整性检查，所以不需要volatile；Not using volatile because it's used only for a sanity check.
      */
     boolean added;
 
     /**
+     * 如果isSharable()返回true，会抛出IllegalStateException异常，isSharable()就是判断是否有@Sharable注解
      * Throws {@link IllegalStateException} if {@link ChannelHandlerAdapter#isSharable()} returns {@code true}
      */
     protected void ensureNotSharable() {
@@ -92,5 +93,4 @@ public abstract class ChannelHandlerAdapter implements ChannelHandler {
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
         ctx.fireExceptionCaught(cause);
     }
-
 }

@@ -29,15 +29,15 @@ package io.netty.channel;
  * releases the received messages automatically, please see {@link SimpleChannelInboundHandler}.
  * </p>
  *
- * 处理入站事件，继承ChannelHandlerAdapter抽象类并实现ChannelInboundHandler，每个实现方法默认无任何逻辑，直接转
- * 发到下一个节点，子类如果有自定义的逻辑可重写对应的方法。
+ * 处理入站事件，继承ChannelHandlerAdapter抽象类并实现ChannelInboundHandler的全部方法，每个实现方法默认无任何
+ * 逻辑，直接转发到下一个节点，子类如果有自定义的逻辑可重写对应的方法。
  */
 public class ChannelInboundHandlerAdapter extends ChannelHandlerAdapter implements ChannelInboundHandler {
 
     /**
      * Calls {@link ChannelHandlerContext#fireChannelRegistered()} to forward
      * to the next {@link ChannelInboundHandler} in the {@link ChannelPipeline}.
-     *
+     * 转发到下一个节点，子类可重写
      * Sub-classes may override this method to change behavior.
      */
     @Override
@@ -48,7 +48,7 @@ public class ChannelInboundHandlerAdapter extends ChannelHandlerAdapter implemen
     /**
      * Calls {@link ChannelHandlerContext#fireChannelUnregistered()} to forward
      * to the next {@link ChannelInboundHandler} in the {@link ChannelPipeline}.
-     *
+     * 转发到下一个节点，子类可重写
      * Sub-classes may override this method to change behavior.
      */
     @Override
@@ -59,7 +59,7 @@ public class ChannelInboundHandlerAdapter extends ChannelHandlerAdapter implemen
     /**
      * Calls {@link ChannelHandlerContext#fireChannelActive()} to forward
      * to the next {@link ChannelInboundHandler} in the {@link ChannelPipeline}.
-     *
+     * 转发到下一个节点，子类可重写
      * Sub-classes may override this method to change behavior.
      */
     @Override
@@ -70,7 +70,7 @@ public class ChannelInboundHandlerAdapter extends ChannelHandlerAdapter implemen
     /**
      * Calls {@link ChannelHandlerContext#fireChannelInactive()} to forward
      * to the next {@link ChannelInboundHandler} in the {@link ChannelPipeline}.
-     *
+     * 转发到下一个节点，子类可重写
      * Sub-classes may override this method to change behavior.
      */
     @Override
@@ -81,7 +81,7 @@ public class ChannelInboundHandlerAdapter extends ChannelHandlerAdapter implemen
     /**
      * Calls {@link ChannelHandlerContext#fireChannelRead(Object)} to forward
      * to the next {@link ChannelInboundHandler} in the {@link ChannelPipeline}.
-     *
+     * 转发到下一个节点，子类可重写
      * Sub-classes may override this method to change behavior.
      */
     @Override
@@ -92,7 +92,7 @@ public class ChannelInboundHandlerAdapter extends ChannelHandlerAdapter implemen
     /**
      * Calls {@link ChannelHandlerContext#fireChannelReadComplete()} to forward
      * to the next {@link ChannelInboundHandler} in the {@link ChannelPipeline}.
-     *
+     * 转发到下一个节点，子类可重写
      * Sub-classes may override this method to change behavior.
      */
     @Override
@@ -103,7 +103,7 @@ public class ChannelInboundHandlerAdapter extends ChannelHandlerAdapter implemen
     /**
      * Calls {@link ChannelHandlerContext#fireUserEventTriggered(Object)} to forward
      * to the next {@link ChannelInboundHandler} in the {@link ChannelPipeline}.
-     *
+     * 转发到下一个节点，子类可重写
      * Sub-classes may override this method to change behavior.
      */
     @Override
@@ -114,7 +114,7 @@ public class ChannelInboundHandlerAdapter extends ChannelHandlerAdapter implemen
     /**
      * Calls {@link ChannelHandlerContext#fireChannelWritabilityChanged()} to forward
      * to the next {@link ChannelInboundHandler} in the {@link ChannelPipeline}.
-     *
+     * 转发到下一个节点，子类可重写
      * Sub-classes may override this method to change behavior.
      */
     @Override
@@ -125,7 +125,7 @@ public class ChannelInboundHandlerAdapter extends ChannelHandlerAdapter implemen
     /**
      * Calls {@link ChannelHandlerContext#fireExceptionCaught(Throwable)} to forward
      * to the next {@link ChannelHandler} in the {@link ChannelPipeline}.
-     *
+     * 转发到下一个节点，子类可重写
      * Sub-classes may override this method to change behavior.
      */
     @Override
@@ -133,5 +133,4 @@ public class ChannelInboundHandlerAdapter extends ChannelHandlerAdapter implemen
             throws Exception {
         ctx.fireExceptionCaught(cause);
     }
-
 }
