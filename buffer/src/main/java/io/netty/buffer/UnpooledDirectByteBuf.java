@@ -691,10 +691,12 @@ public class UnpooledDirectByteBuf extends AbstractReferenceCountedByteBuf {
     @Override
     protected void deallocate() {
         ByteBuffer buffer = this.buffer;
+        //buffer是直接内存的引用对象，将其置为null即可
+        //,如果已经是null则返回
         if (buffer == null) {
             return;
         }
-        // 置空 buffer 属性
+        //将buffer置null
         this.buffer = null;
 
         // 释放 buffer 对象

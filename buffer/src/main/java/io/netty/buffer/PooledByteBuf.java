@@ -223,8 +223,9 @@ abstract class PooledByteBuf<T> extends AbstractReferenceCountedByteBuf {
 
     @Override
     protected final void deallocate() {
+        //handle代表内存块所处位置
         if (handle >= 0) {
-            // 重置属性
+            // 属性重置
             final long handle = this.handle;
             this.handle = -1;
             memory = null;

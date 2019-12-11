@@ -22,6 +22,8 @@ import io.netty.handler.codec.MessageToByteEncoder;
 import java.math.BigInteger;
 
 /**
+ * 将数字编码为ByteBuf，并写到对应的ByteBuf里面，
+ * 这里回将数字编码为对应的二进制编码，
  * Encodes a {@link Number} into the binary representation prepended with
  * a magic number ('F' or 0x46) and a 32-bit length prefix.  For example, 42
  * will be encoded to { 'F', 0, 0, 0, 1, 42 }.
@@ -45,9 +47,8 @@ public class NumberEncoder extends MessageToByteEncoder<Number> {
         int dataLength = data.length;
 
         // Write a message.
-        out.writeByte((byte) 'F'); // magic number
-        out.writeInt(dataLength);  // data length
+        out.writeByte((byte) 'F'); // magic number，魔数开头
+        out.writeInt(dataLength);  // data length，数字长度
         out.writeBytes(data);      // data
     }
-
 }

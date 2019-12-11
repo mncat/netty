@@ -18,7 +18,8 @@ package io.netty.channel;
 import io.netty.util.concurrent.EventExecutorGroup;
 
 /**
- * EventLoop分组接口，提供了EventLoop的获取方法(next)和将Channel注册到EventLoop的方法
+ * EventLoop 分组接口，提供了EventLoop 的获取方法(next)和将 Channel注册到 EventLoop的方法
+ * 一个特殊的 EventExecutorGroup ，它允许注册 Channel，在selection 操作后处理这些 Channel
  *
  * Special {@link EventExecutorGroup} which allows registering {@link Channel}s that get
  * processed for later selection during the event loop.
@@ -35,11 +36,14 @@ public interface EventLoopGroup extends EventExecutorGroup {
     /**
      * Register a {@link Channel} with this {@link EventLoop}. The returned {@link ChannelFuture}
      * will get notified once the registration was complete.
-     * 注册一个Channel到EventLoop上，注册成功后ChannelFuture会收到一个通知
+     *
+     * 注册一个Channel到EventLoop上，注册成功后 ChannelFuture 会收到一个通知
      */
     ChannelFuture register(Channel channel);
 
     /**
+     * 注册一个Channel到EventLoop上，注册成功后 ChannelFuture 会收到一个通知
+     *
      * Register a {@link Channel} with this {@link EventLoop} using a {@link ChannelFuture}. The passed
      * {@link ChannelFuture} will get notified once the registration was complete and also will get returned.
      */

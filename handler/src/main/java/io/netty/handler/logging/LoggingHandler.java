@@ -33,6 +33,7 @@ import static io.netty.buffer.ByteBufUtil.appendPrettyHexDump;
 import static io.netty.util.internal.StringUtil.NEWLINE;
 
 /**
+ * 使用日志框架记录所有事件日志的handler，默认是DEBUG级别
  * A {@link ChannelHandler} that logs all events using a logging framework.
  * By default, all events are logged at <tt>DEBUG</tt> level.
  */
@@ -41,7 +42,7 @@ import static io.netty.util.internal.StringUtil.NEWLINE;
 public class LoggingHandler extends ChannelDuplexHandler {
 
     /**
-     * 默认 {@link #level} 日志级别
+     * 默认 {@link #level} 日志级别DEBUG
      */
     private static final LogLevel DEFAULT_LEVEL = LogLevel.DEBUG;
 
@@ -150,46 +151,64 @@ public class LoggingHandler extends ChannelDuplexHandler {
         return level;
     }
 
+    /**
+     * 注册成功后回调打印日志
+     */
     @Override
     public void channelRegistered(ChannelHandlerContext ctx) throws Exception {
         if (logger.isEnabled(internalLevel)) {
             logger.log(internalLevel, format(ctx, "REGISTERED"));
         }
-        //
+        //调用下一个Handler传递事件
         ctx.fireChannelRegistered();
     }
 
+    /**
+     * 注销成功后回调打印日志
+     */
     @Override
     public void channelUnregistered(ChannelHandlerContext ctx) throws Exception {
         if (logger.isEnabled(internalLevel)) {
             logger.log(internalLevel, format(ctx, "UNREGISTERED"));
         }
+        //调用下一个Handler传递事件
         ctx.fireChannelUnregistered();
     }
 
+    /**
+     * 连接活跃后回调打印日志
+     */
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
         // 打印日志
         if (logger.isEnabled(internalLevel)) {
             logger.log(internalLevel, format(ctx, "ACTIVE"));
         }
-        // 传递 Channel active 事件，给下一个节点
+        //调用下一个Handler传递事件
         ctx.fireChannelActive();
     }
 
+    /**
+     * 不活跃后回调打印日志
+     */
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
         if (logger.isEnabled(internalLevel)) {
             logger.log(internalLevel, format(ctx, "INACTIVE"));
         }
+        //调用下一个Handler传递事件
         ctx.fireChannelInactive();
     }
 
+    /**
+     * 异常后回调打印日志
+     */
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
         if (logger.isEnabled(internalLevel)) {
             logger.log(internalLevel, format(ctx, "EXCEPTION", cause), cause);
         }
+        //调用下一个Handler传递事件
         ctx.fireExceptionCaught(cause);
     }
 
@@ -198,17 +217,25 @@ public class LoggingHandler extends ChannelDuplexHandler {
         if (logger.isEnabled(internalLevel)) {
             logger.log(internalLevel, format(ctx, "USER_EVENT", evt));
         }
+        //调用下一个Handler传递事件
         ctx.fireUserEventTriggered(evt);
     }
 
+    /**
+     * 绑定后回调打印日志
+     */
     @Override
     public void bind(ChannelHandlerContext ctx, SocketAddress localAddress, ChannelPromise promise) throws Exception {
         if (logger.isEnabled(internalLevel)) {
             logger.log(internalLevel, format(ctx, "BIND", localAddress));
         }
+        //调用下一个Handler传递事件
         ctx.bind(localAddress, promise);
     }
 
+    /**
+     * 连接后回调打印日志
+     */
     @Override
     public void connect(
             ChannelHandlerContext ctx,
@@ -216,22 +243,31 @@ public class LoggingHandler extends ChannelDuplexHandler {
         if (logger.isEnabled(internalLevel)) {
             logger.log(internalLevel, format(ctx, "CONNECT", remoteAddress, localAddress));
         }
+        //调用下一个Handler传递事件
         ctx.connect(remoteAddress, localAddress, promise);
     }
 
+    /**
+     * 断开连接后回调打印日志
+     */
     @Override
     public void disconnect(ChannelHandlerContext ctx, ChannelPromise promise) throws Exception {
         if (logger.isEnabled(internalLevel)) {
             logger.log(internalLevel, format(ctx, "DISCONNECT"));
         }
+        //调用下一个Handler传递事件
         ctx.disconnect(promise);
     }
 
+    /**
+     * 关闭后回调打印日志
+     */
     @Override
     public void close(ChannelHandlerContext ctx, ChannelPromise promise) throws Exception {
         if (logger.isEnabled(internalLevel)) {
             logger.log(internalLevel, format(ctx, "CLOSE"));
         }
+        //调用下一个Handler传递事件
         ctx.close(promise);
     }
 
@@ -243,6 +279,9 @@ public class LoggingHandler extends ChannelDuplexHandler {
         ctx.deregister(promise);
     }
 
+    /**
+     * 读完毕后回调打印日志
+     */
     @Override
     public void channelReadComplete(ChannelHandlerContext ctx) throws Exception {
         if (logger.isEnabled(internalLevel)) {
@@ -251,19 +290,27 @@ public class LoggingHandler extends ChannelDuplexHandler {
         ctx.fireChannelReadComplete();
     }
 
+    /**
+     * 读事件产生后回调打印日志
+     */
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
         if (logger.isEnabled(internalLevel)) {
             logger.log(internalLevel, format(ctx, "READ", msg));
         }
+        //调用下一个Handler传递事件
         ctx.fireChannelRead(msg);
     }
 
+    /**
+     * 写事件产生后回调打印日志
+     */
     @Override
     public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
         if (logger.isEnabled(internalLevel)) {
             logger.log(internalLevel, format(ctx, "WRITE", msg));
         }
+        //调用下一个Handler传递事件
         ctx.write(msg, promise);
     }
 

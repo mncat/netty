@@ -22,8 +22,8 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 /**
- * EventExecutor(事件执行器)分组接口，提供处理EventExecutor生命周期的方法，
- * 比如关闭方法shutdownGracefully、terminationFuture(全部EventExecutor关闭之后会调用对应的Future)
+ * EventExecutor(事件执行器)分组接口，提供处理 EventExecutor 生命周期的方法，
+ * 比如关闭方法 shutdownGracefully、terminationFuture(全部EventExecutor关闭之后会调用对应的Future)
  * isShuttingDown：判断全部的EventExecutor是否都已经关闭
  * 另外提供了next方法用于返回一个EventExecutor
  * 另外他重写了继承自父类的一些方法，默认也是空实现，避免子类需要实现全部的方法

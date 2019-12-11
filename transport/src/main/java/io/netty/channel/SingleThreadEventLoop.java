@@ -27,8 +27,7 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.ThreadFactory;
 
 /**
- * 基于单线程的EventLoop抽象类，
- * 主要增加了注册功能，将Channel注册到EventLoop上
+ * EventLoop 的抽象基类，用一个单线程执行全部提交的任务,主要增加了注册功能，将Channel注册到EventLoop上
  * <p>
  * Abstract base class for {@link EventLoop}s that execute all its submitted tasks in a single thread.
  */

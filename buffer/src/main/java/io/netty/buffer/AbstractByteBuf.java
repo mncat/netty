@@ -15,11 +15,7 @@
  */
 package io.netty.buffer;
 
-import io.netty.util.ByteProcessor;
-import io.netty.util.CharsetUtil;
-import io.netty.util.IllegalReferenceCountException;
-import io.netty.util.ResourceLeakDetector;
-import io.netty.util.ResourceLeakDetectorFactory;
+import io.netty.util.*;
 import io.netty.util.internal.PlatformDependent;
 import io.netty.util.internal.StringUtil;
 import io.netty.util.internal.SystemPropertyUtil;
@@ -224,30 +220,30 @@ public abstract class AbstractByteBuf extends ByteBuf {
 
     @Override
     public ByteBuf discardReadBytes() {
-        // 校验可访问
+        //1.校验可访问
         ensureAccessible();
-        // 无废弃段，直接返回
+        //2.无废弃段，则直接返回
         if (readerIndex == 0) {
             return this;
         }
 
-        // 未读取完
+        //3.未读取完
         if (readerIndex != writerIndex) {
-            // 将可读段复制到 ByteBuf 头
+            //4.将可读段复制到ByteBuf头部空间，由子类实现
             setBytes(0, this, readerIndex, writerIndex - readerIndex);
-            // 写索引减小
+            //5.写索引减小
             writerIndex -= readerIndex;
-            // 调整标记位
+            //6.调整标记位
             adjustMarkers(readerIndex);
-            // 读索引重置为 0
+            //7.读索引重置为 0
             readerIndex = 0;
-        // 全部读取完
         } else {
-            // 调整标记位
+            //8.全部读取完，则调整标记位
             adjustMarkers(readerIndex);
-            // 读写索引都重置为 0
+            //9.索引重置
             writerIndex = readerIndex = 0;
         }
+        //10.返回当前对象
         return this;
     }
 
@@ -294,11 +290,11 @@ public abstract class AbstractByteBuf extends ByteBuf {
             if (markedWriterIndex <= decrement) {
                 // 重置写标记位为 0
                 this.markedWriterIndex = 0;
-            // 减小写标记位
+                // 减小写标记位
             } else {
                 this.markedWriterIndex = markedWriterIndex - decrement;
             }
-        // 减小读写标记位
+            // 减小读写标记位
         } else {
             this.markedReaderIndex = markedReaderIndex - decrement;
             this.markedWriterIndex -= decrement;
@@ -581,7 +577,7 @@ public abstract class AbstractByteBuf extends ByteBuf {
 
     @Override
     public ByteBuf setBoolean(int index, boolean value) {
-        setByte(index, value? 1 : 0);
+        setByte(index, value ? 1 : 0);
         return this;
     }
 
@@ -715,7 +711,7 @@ public abstract class AbstractByteBuf extends ByteBuf {
 
         int nLong = length >>> 3;
         int nBytes = length & 7;
-        for (int i = nLong; i > 0; i --) {
+        for (int i = nLong; i > 0; i--) {
             _setLong(index, 0);
             index += 8;
         }
@@ -723,16 +719,16 @@ public abstract class AbstractByteBuf extends ByteBuf {
             _setInt(index, 0);
             // Not need to update the index as we not will use it after this.
         } else if (nBytes < 4) {
-            for (int i = nBytes; i > 0; i --) {
+            for (int i = nBytes; i > 0; i--) {
                 _setByte(index, (byte) 0);
-                index ++;
+                index++;
             }
         } else {
             _setInt(index, 0);
             index += 4;
-            for (int i = nBytes - 4; i > 0; i --) {
+            for (int i = nBytes - 4; i > 0; i--) {
                 _setByte(index, (byte) 0);
-                index ++;
+                index++;
             }
         }
         return this;
@@ -1215,7 +1211,7 @@ public abstract class AbstractByteBuf extends ByteBuf {
         int nBytes = length & 7;
 
         // 写入 nLong 个
-        for (int i = nLong; i > 0; i --) {
+        for (int i = nLong; i > 0; i--) {
             _setLong(wIndex, 0);
             wIndex += 8;
         }
@@ -1224,17 +1220,17 @@ public abstract class AbstractByteBuf extends ByteBuf {
         if (nBytes == 4) {
             _setInt(wIndex, 0);
             wIndex += 4;
-        // < 4 字节，逐个写
+            // < 4 字节，逐个写
         } else if (nBytes < 4) {
-            for (int i = nBytes; i > 0; i --) {
+            for (int i = nBytes; i > 0; i--) {
                 _setByte(wIndex, (byte) 0);
                 wIndex++;
             }
-        // > 4 字节，Int + 逐个写
+            // > 4 字节，Int + 逐个写
         } else {
             _setInt(wIndex, 0);
             wIndex += 4;
-            for (int i = nBytes - 4; i > 0; i --) {
+            for (int i = nBytes - 4; i > 0; i--) {
                 _setByte(wIndex, (byte) 0);
                 wIndex++;
             }
@@ -1420,10 +1416,10 @@ public abstract class AbstractByteBuf extends ByteBuf {
         }
 
         StringBuilder buf = new StringBuilder()
-            .append(StringUtil.simpleClassName(this))
-            .append("(ridx: ").append(readerIndex)
-            .append(", widx: ").append(writerIndex)
-            .append(", cap: ").append(capacity());
+                .append(StringUtil.simpleClassName(this))
+                .append("(ridx: ").append(readerIndex)
+                .append(", widx: ").append(writerIndex)
+                .append(", cap: ").append(capacity());
         if (maxCapacity != Integer.MAX_VALUE) {
             buf.append('/').append(maxCapacity);
         }
