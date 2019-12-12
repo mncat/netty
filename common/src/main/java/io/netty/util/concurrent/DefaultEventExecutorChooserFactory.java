@@ -20,8 +20,8 @@ import io.netty.util.internal.UnstableApi;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- * 默认 EventExecutorChooser 工厂实现类
- *
+ * 默认 EventExecutorChooser 工厂实现类，简单轮询选择 EventExecutor
+ * <p>
  * Default implementation which uses simple round-robin to choose next {@link EventExecutor}.
  */
 @UnstableApi
@@ -32,12 +32,14 @@ public final class DefaultEventExecutorChooserFactory implements EventExecutorCh
      */
     public static final DefaultEventExecutorChooserFactory INSTANCE = new DefaultEventExecutorChooserFactory();
 
-    private DefaultEventExecutorChooserFactory() { }
+    private DefaultEventExecutorChooserFactory() {
+    }
 
     @SuppressWarnings("unchecked")
     @Override
     public EventExecutorChooser newChooser(EventExecutor[] executors) {
-        if (isPowerOfTwo(executors.length)) { // 是否为 2 的幂次方
+        //长度为2的幂次，就使用与运算
+        if (isPowerOfTwo(executors.length)) {
             return new PowerOfTwoEventExecutorChooser(executors);
         } else {
             return new GenericEventExecutorChooser(executors);
@@ -63,11 +65,15 @@ public final class DefaultEventExecutorChooserFactory implements EventExecutorCh
             this.executors = executors;
         }
 
+        /**
+         * 自增与运算，相当于轮询，其实和则增取余差不多，只不过当 executors 长度为2的幂次时，取余运算和
+         * 这里的与运算等价，不过与云运算性能更好，类似于 hashMap 里面的，非常细微的优化
+         * 在前面的 newChooser 方法选择的时候会判断如果长度是2的幂次就选这个，不是就选择轮询
+         */
         @Override
         public EventExecutor next() {
             return executors[idx.getAndIncrement() & executors.length - 1];
         }
-
     }
 
     private static final class GenericEventExecutorChooser implements EventExecutorChooser {
@@ -85,11 +91,12 @@ public final class DefaultEventExecutorChooserFactory implements EventExecutorCh
             this.executors = executors;
         }
 
+        /**
+         * 自增取余，相当于轮询
+         */
         @Override
         public EventExecutor next() {
             return executors[Math.abs(idx.getAndIncrement() % executors.length)];
         }
-
     }
-
 }

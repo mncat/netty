@@ -17,7 +17,6 @@ package io.netty.util.concurrent;
 
 /**
  * 事件执行器接口
- * EventExecutor事件执行器是一个具体的事件执行器分组，
  * The {@link EventExecutor} is a special {@link EventExecutorGroup} which comes
  * with some handy methods to see if a {@link Thread} is executed in a event loop.
  * Besides this, it also extends the {@link EventExecutorGroup} to allow for a generic
@@ -34,19 +33,21 @@ public interface EventExecutor extends EventExecutorGroup {
     EventExecutor next();
 
     /**
-     * 所属EventExecutorGroup
+     * 所属 EventExecutorGroup
      * Return the {@link EventExecutorGroup} which is the parent of this {@link EventExecutor},
      */
     EventExecutorGroup parent();
 
     /**
      * 当前线程是否在EventLoop线程中
+     *
      * Calls {@link #inEventLoop(Thread)} with {@link Thread#currentThread()} as argument
      */
     boolean inEventLoop();
 
     /**
      * 指定线程是否是 EventLoop 线程
+     *
      * Return {@code true} if the given {@link Thread} is executed in the event loop,
      * {@code false} otherwise.
      */

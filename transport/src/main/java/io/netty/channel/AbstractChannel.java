@@ -612,8 +612,7 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
                 // check if the channel is still open as it could be closed in the mean time when the register
                 // call was outside of the eventLoop
                 //1.判断channel仍然是打开的,反之就返回
-                if (!promise.setUncancellable() // TODO 1001 Promise
-                        || !ensureOpen(promise)) {
+                if (!promise.setUncancellable() || !ensureOpen(promise)) {
                     return;
                 }
                 //2.记录是否为首次注册

@@ -29,14 +29,17 @@ import static io.netty.util.concurrent.AbstractEventExecutor.DEFAULT_SHUTDOWN_TI
 
 /**
  * EventExecutorGroup的抽象实现类
- * 里面的实现基本都是基于EventExecutorGroup的一个next方法来做的，next方法会返回一个EventExecutor，这里面的实现都是先
- * 通过next获得一个EventExecutor(事件执行器)，然后通过事件执行器来执行对应的操作，这里思考一下为什么EventExecutor事件
- * 执行器可以执行这些方法，很简单，其实EventExecutor也是EventExecutorGroup的一个子类，因此获得了这些方法
+ *
+ * 里面的实现基本都是基于 EventExecutorGroup 的一个 next 方法来做的，next获得一个EventExecutor(事件执行器)，由
+ * 这个执行器来执行任务
+ *
+ * EventExecutor 也是 EventExecutorGroup 的一个子类，因此获得了这些方法，对应最终的实现类有NioEventLoop，内部是
+ * 有一个线程对象的
  */
 public abstract class AbstractEventExecutorGroup implements EventExecutorGroup {
 
     /**
-     *通过next获得一个EventExecutor事件执行器,由事件执行器执行该方法
+     *通过next获得一个 EventExecutor 事件执行器,由事件执行器执行该方法
      * */
     @Override
     public Future<?> submit(Runnable task) {
@@ -119,5 +122,4 @@ public abstract class AbstractEventExecutorGroup implements EventExecutorGroup {
     public void execute(Runnable command) {
         next().execute(command);
     }
-
 }

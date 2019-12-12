@@ -25,33 +25,37 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- * 基于多线程的 EventExecutor ( 事件执行器 )的分组抽象类
- * <p>
- * Abstract base class for {@link EventExecutorGroup} implementations that handles their tasks with multiple threads at
- * the same time.
+ * 基于多线程的 EventExecutor ( 事件执行器 ) 的分组抽象类,用多线程处理任务
+ *
+ * Abstract base class for {@link EventExecutorGroup} implementations that handles their tasks
+ * with multiple threads atthe same time.
  */
 public abstract class MultithreadEventExecutorGroup extends AbstractEventExecutorGroup {
 
     /**
-     * EventExecutor数组
+     * EventExecutor 数组，可以理解为一个 EventExecutor 对应一个线程
      */
     private final EventExecutor[] children;
+
     /**
      * (不可变)只读的EventExecutor数组
      *
      * @see #MultithreadEventExecutorGroup(int, Executor, EventExecutorChooserFactory, Object...)
      */
     private final Set<EventExecutor> readonlyChildren;
+
     /**
      * 已终止的EventExecutor数量
      */
     private final AtomicInteger terminatedChildren = new AtomicInteger();
+
     /**
      * 用于终止EventExecutor的异步 Future
      */
     private final Promise<?> terminationFuture = new DefaultPromise(GlobalEventExecutor.INSTANCE);
+
     /**
-     * EventExecutor选择器
+     * EventExecutor选择器，可以定义
      */
     private final EventExecutorChooserFactory.EventExecutorChooser chooser;
 
@@ -88,6 +92,7 @@ public abstract class MultithreadEventExecutorGroup extends AbstractEventExecuto
      * @param args           arguments which will passed to each {@link #newChild(Executor, Object...)} call
      */
     protected MultithreadEventExecutorGroup(int nThreads, Executor executor, EventExecutorChooserFactory chooserFactory, Object... args) {
+        //1.线程数不能小于0
         if (nThreads <= 0) {
             throw new IllegalArgumentException(String.format("nThreads: %d (expected: > 0)", nThreads));
         }
@@ -97,16 +102,16 @@ public abstract class MultithreadEventExecutorGroup extends AbstractEventExecuto
             executor = new ThreadPerTaskExecutor(newDefaultThreadFactory());
         }
 
-        //3.创建children EventExecutor数组
+        //3.创建children EventExecutor 数组
         children = new EventExecutor[nThreads];
 
-        //4.循环创建EventExecutor数组中的EventExecutor
+        //4.循环创建 EventExecutor 数组中的EventExecutor
         for (int i = 0; i < nThreads; i++) {
             //是否创建成功
             boolean success = false;
             try {
                 //5.创建EventExecutor对象，newChild是抽象方法交给子类实现，
-                //不同的子类创建的执行器是不通类型的，有NioEventLoop、KQueueEventLoop等
+                //不同的子类创建的执行器是不同类型的，有 NioEventLoop、KQueueEventLoop等
                 children[i] = newChild(executor, args);
                 //6.标记创建成功
                 success = true;
@@ -115,14 +120,14 @@ public abstract class MultithreadEventExecutorGroup extends AbstractEventExecuto
                 //TODO: Think about if this is a good exception type
                 throw new IllegalStateException("failed to create a child event loop", e);
             } finally {
-                //8.创建失败，关闭所有已创建的EventExecutor;注意这个成功的标志位success是每次循环进来都会赋值，
+                //8.创建失败，关闭所有已创建的 EventExecutor;注意这个成功的标志位 success 是每次循环进来都会赋值，
                 //因此相当于每一次都会去判断是否失败，只要有一个失败，就会把前面的创建好的EventExecutor关闭
                 if (!success) {
                     //9.关闭所有已创建的 EventExecutor
                     for (int j = 0; j < i; j++) {
                         children[j].shutdownGracefully();
                     }
-                    //10.确保所有已创建的EventExecutor已关闭，异常的话就
+                    //10.确保所有已创建的 EventExecutor 已关闭，异常的话就等待直到关闭掉
                     for (int j = 0; j < i; j++) {
                         EventExecutor e = children[j];
                         try {
@@ -139,7 +144,7 @@ public abstract class MultithreadEventExecutorGroup extends AbstractEventExecuto
             }
         }
 
-        //11.创建EventExecutor选择器
+        //11.创建 EventExecutor 选择器，默认选择策略是轮询
         chooser = chooserFactory.newChooser(children);
 
         //12.创建监听器，用于 EventExecutor 终止时的监听
@@ -161,7 +166,7 @@ public abstract class MultithreadEventExecutorGroup extends AbstractEventExecuto
             e.terminationFuture().addListener(terminationListener);
         }
 
-        //14.创建不可变(只读)的EventExecutor数组,通过工具类返回一个只读的Set，里面包含的EventExecutor和EventExecutor数组是一样的
+        //14.创建不可变(只读)的EventExecutor数组,通过工具类返回一个只读的Set，里面包含的 EventExecutor和EventExecutor 数组是一样的
         Set<EventExecutor> childrenSet = new LinkedHashSet<EventExecutor>(children.length);
         Collections.addAll(childrenSet, children);
         readonlyChildren = Collections.unmodifiableSet(childrenSet);
@@ -171,6 +176,9 @@ public abstract class MultithreadEventExecutorGroup extends AbstractEventExecuto
         return new DefaultThreadFactory(getClass());
     }
 
+    /**
+     * 获取一个事件执行器，用选择器来选一个，默认是轮询
+     */
     @Override
     public EventExecutor next() {
         return chooser.next();
@@ -182,6 +190,7 @@ public abstract class MultithreadEventExecutorGroup extends AbstractEventExecuto
     }
 
     /**
+     * 返回 EventExecutor 数量
      * Return the number of {@link EventExecutor} this implementation uses. This number is the maps
      * 1:1 to the threads it use.
      */
@@ -190,11 +199,15 @@ public abstract class MultithreadEventExecutorGroup extends AbstractEventExecuto
     }
 
     /**
+     * 创建一个 EventExecutor ，后续next方法返回的就是EventExecutor，这个方法会被服务于 MultithreadEventExecutorGroup的线程调用
      * Create a new EventExecutor which will later then accessible via the {@link #next()}  method. This method will be
      * called for each thread that will serve this {@link MultithreadEventExecutorGroup}.
      */
     protected abstract EventExecutor newChild(Executor executor, Object... args) throws Exception;
 
+    /**
+     * 关闭，逐个关闭内部的 EventExecutor
+     * */
     @Override
     public Future<?> shutdownGracefully(long quietPeriod, long timeout, TimeUnit unit) {
         for (EventExecutor l : children) {
@@ -263,5 +276,4 @@ public abstract class MultithreadEventExecutorGroup extends AbstractEventExecuto
         }
         return isTerminated();
     }
-
 }

@@ -18,7 +18,7 @@ package io.netty.channel;
 import io.netty.util.concurrent.EventExecutorGroup;
 
 /**
- * EventLoop 分组接口，提供了EventLoop 的获取方法(next)和将 Channel注册到 EventLoop的方法
+ * EventLoop 分组接口，提供了EventLoop 的获取方法(next)和将 Channel 注册到 EventLoop的方法
  * 一个特殊的 EventExecutorGroup ，它允许注册 Channel，在selection 操作后处理这些 Channel
  *
  * Special {@link EventExecutorGroup} which allows registering {@link Channel}s that get

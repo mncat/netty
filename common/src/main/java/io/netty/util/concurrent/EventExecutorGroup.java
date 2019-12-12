@@ -85,6 +85,7 @@ public interface EventExecutorGroup extends ScheduledExecutorService, Iterable<E
     List<Runnable> shutdownNow();
 
     /**
+     * 这个方法很关键没返回内部管理的一个 EventExecutor 对象，用于执行任务
      * Returns one of the {@link EventExecutor}s managed by this {@link EventExecutorGroup}.
      */
     EventExecutor next();
