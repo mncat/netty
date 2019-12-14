@@ -28,6 +28,8 @@ import java.util.concurrent.RunnableFuture;
 import java.util.concurrent.TimeUnit;
 
 /**
+ * EventExecutor 的抽象实现
+ * AbstractEventExecutor 实现了继承自 ExecutorService 和 EventExecutorGroup 的方法，但是很多方法只是空实现
  * Abstract base class for {@link EventExecutor} implementations.
  */
 public abstract class AbstractEventExecutor extends AbstractExecutorService implements EventExecutor {
@@ -35,9 +37,10 @@ public abstract class AbstractEventExecutor extends AbstractExecutorService impl
     private static final InternalLogger logger = InternalLoggerFactory.getInstance(AbstractEventExecutor.class);
 
     /**
-     * TODO 1006 EventLoop 优雅关闭
+     * 关闭期间，该段时间内收到任务会被接受并且重新计时
      */
     static final long DEFAULT_SHUTDOWN_QUIET_PERIOD = 2;
+
     /**
      * 默认关闭超时，单位：秒
      */
@@ -47,6 +50,7 @@ public abstract class AbstractEventExecutor extends AbstractExecutorService impl
      * 所属 EventExecutorGroup
      */
     private final EventExecutorGroup parent;
+
     /**
      * EventExecutor 数组。只包含自己，用于 {@link #iterator()}
      */
@@ -178,5 +182,4 @@ public abstract class AbstractEventExecutor extends AbstractExecutorService impl
             logger.warn("A task raised an exception. Task: {}", task, t);
         }
     }
-
 }

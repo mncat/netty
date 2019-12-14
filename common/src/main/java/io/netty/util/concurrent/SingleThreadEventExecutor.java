@@ -56,11 +56,17 @@ public abstract class SingleThreadEventExecutor extends AbstractScheduledEventEx
      */
     static final int DEFAULT_MAX_PENDING_EXECUTOR_TASKS = Math.max(16, SystemPropertyUtil.getInt("io.netty.eventexecutor.maxPendingTasks", Integer.MAX_VALUE));
 
-    private static final int ST_NOT_STARTED = 1; // 未开始
-    private static final int ST_STARTED = 2; // 已开始
-    private static final int ST_SHUTTING_DOWN = 3; // 正在关闭中
-    private static final int ST_SHUTDOWN = 4; // 已关闭isShutdown
-    private static final int ST_TERMINATED = 5; // 已经终止
+    // EventExecutor 状态
+    // 未开始
+    private static final int ST_NOT_STARTED = 1;
+    // 已开始
+    private static final int ST_STARTED = 2;
+    // 正在关闭中
+    private static final int ST_SHUTTING_DOWN = 3;
+    // 已关闭isShutdown
+    private static final int ST_SHUTDOWN = 4;
+    // 已经终止
+    private static final int ST_TERMINATED = 5;
 
     private static final Runnable WAKEUP_TASK = new Runnable() {
         @Override
@@ -579,8 +585,7 @@ public abstract class SingleThreadEventExecutor extends AbstractScheduledEventEx
     }
 
     protected void wakeup(boolean inEventLoop) {
-        if (!inEventLoop
-                || state == ST_SHUTTING_DOWN) { // TODO 1006 EventLoop 优雅关闭
+        if (!inEventLoop || state == ST_SHUTTING_DOWN) { // TODO 1006 EventLoop 优雅关闭
             // Use offer as we actually only need this to unblock the thread and if offer fails we do not care as there
             // is already something in the queue.
             taskQueue.offer(WAKEUP_TASK);
@@ -868,16 +873,22 @@ public abstract class SingleThreadEventExecutor extends AbstractScheduledEventEx
         return isTerminated();
     }
 
+    /**
+     * 执行任务
+     * */
     @Override
     public void execute(Runnable task) {
         if (task == null) {
             throw new NullPointerException("task");
         }
 
-        // 获得当前是否在 EventLoop 的线程中
+        //1.判断当前线程是不是 EventLoop 对应的线程
         boolean inEventLoop = inEventLoop();
-        // 添加到任务队列
+        //2.添加到任务队列
         addTask(task);
+        //3.如果当前线程不是 EventLoop线程，那么就 startThread 启动线程
+        //startThread 内部会判断状态，如果没有启动就启动，并原子修改状态变量
+        //如果已经启动了，那就啥都不做
         if (!inEventLoop) {
             // 创建线程
             startThread();
@@ -887,7 +898,7 @@ public abstract class SingleThreadEventExecutor extends AbstractScheduledEventEx
             }
         }
 
-        // 唤醒线程
+        //4.唤醒线程(如果不在EventLoop中或者关闭中，都会尝试唤醒)
         if (!addTaskWakesUp && wakesUpForTask(task)) {
             wakeup(inEventLoop);
         }
@@ -895,6 +906,7 @@ public abstract class SingleThreadEventExecutor extends AbstractScheduledEventEx
 
     @Override
     public <T> T invokeAny(Collection<? extends Callable<T>> tasks) throws InterruptedException, ExecutionException {
+        //如果当前线程不在 EventLoop，就抛出异常
         throwIfInEventLoop("invokeAny");
         return super.invokeAny(tasks);
     }
